@@ -13,6 +13,8 @@ int mouse_y = 0;
 int tolerancia = 10;
 
 enum State {
+    LINHA,
+    PONTO,
     DRAWING_LINE,
     DRAWING_POLYGON,
     NONE
@@ -80,53 +82,52 @@ void mouse(int button, int state, int x, int y){
                 insertLine->val = novaLinha;
                 insertLine->next = NULL;
                 back->next = insertLine;
-                current_state = NONE;
-                printf("desenhou linha\n");
+                current_state = LINHA;
             }
             else{
                 lineList = (LineNode*)malloc(sizeof(LineNode));
                 lineList->val = novaLinha;
                 lineList->next = NULL;
-                current_state = NONE;
-                printf("desenhou linha\n");
+                current_state = LINHA;
             }
         }
-        else{
+        else if (current_state == LINHA){
             currentLine.coords[0][0] = x;
             currentLine.coords[0][1] = window_height - y;
             currentLine.color[0] = 0.0f;
             currentLine.color[1] = 0.0f;
             currentLine.color[2] = 0.0f;
             current_state = DRAWING_LINE;
-            printf("desenhando linha\n");
         }
 
     }
-    /*if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON){
-       Ponto novoPonto;
-        novoPonto.x = x;
-        novoPonto.y = window_height - y;
-        novoPonto.color[0] = 0.0f;
-        novoPonto.color[1] = 0.0f;
-        novoPonto.color[2] = 0.0f;
-        if (pointList){
-            PointNode* temp = pointList;
-            PointNode* back = NULL;
-            while(temp){
-                back = temp;
-                temp = temp->next;
+    if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON){
+
+        if(current_state == PONTO){
+            Ponto novoPonto;
+            novoPonto.x = x;
+            novoPonto.y = window_height - y;
+            novoPonto.color[0] = 0.0f;
+            novoPonto.color[1] = 0.0f;
+            novoPonto.color[2] = 0.0f;
+            if (pointList) {
+                PointNode *temp = pointList;
+                PointNode *back = NULL;
+                while (temp) {
+                    back = temp;
+                    temp = temp->next;
+                }
+                PointNode *insertPoint = (PointNode *) malloc(sizeof(PointNode));
+                insertPoint->val = novoPonto;
+                insertPoint->next = NULL;
+                back->next = insertPoint;
+            } else {
+                pointList = (PointNode *) malloc(sizeof(PointNode));
+                pointList->val = novoPonto;
+                pointList->next = NULL;
             }
-            PointNode* insertPoint = (PointNode*)malloc(sizeof(PointNode));
-            insertPoint->val = novoPonto;
-            insertPoint->next = NULL;
-            back->next = insertPoint;
         }
-        else{
-            pointList = (PointNode*)malloc(sizeof(PointNode));
-            pointList->val = novoPonto;
-            pointList->next = NULL;
-        }
-    }*/
+    }
     if (state == GLUT_DOWN && button == GLUT_RIGHT_BUTTON){
         if (pointList != NULL) {
             PointNode* temp = pointList;
@@ -165,6 +166,22 @@ void mouseMove(int x, int y){
     mouse_y = y;
 }
 
+void teclado(unsigned char key, int x, int y){
+
+    switch(key){
+        //Quando apertar P entra no modo de desenho de pontos
+        case 112:
+            current_state = PONTO;
+            break;
+        //Quando apertar L entra no modo de desenho de linhas
+        case 108:
+            current_state = LINHA;
+            break;
+        default:
+            current_state = NONE;
+            break;
+    };
+}
 void printSinglePoint(Ponto ponto){
     glColor3f(ponto.color[0], ponto.color[1], ponto.color[2]);
     glBegin(GL_POINTS);
@@ -210,6 +227,7 @@ void display(void){
     glutReshapeFunc(reshape);
     glutMotionFunc(mouseMove);
     glutPassiveMotionFunc(mouseMove);
+    glutKeyboardFunc(teclado);
     printPoints();
     printLines();
     glFlush();

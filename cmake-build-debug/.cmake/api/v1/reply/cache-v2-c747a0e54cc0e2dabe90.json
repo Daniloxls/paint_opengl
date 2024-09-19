@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "c:/Users/danil/Desktop/Projetos/paint_cg/cmake-build-debug"
+			"value" : "c:/Users/danil/Desktop/Projetos/paint_opengl/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -431,7 +431,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Users/danil/Desktop/Projetos/paint_cg/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "C:/Users/danil/Desktop/Projetos/paint_opengl/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -503,7 +503,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "C:/Users/danil/Desktop/Projetos/paint_cg"
+			"value" : "C:/Users/danil/Desktop/Projetos/paint_opengl"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1131,7 +1131,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Users/danil/Desktop/Projetos/paint_cg/cmake-build-debug"
+			"value" : "C:/Users/danil/Desktop/Projetos/paint_opengl/cmake-build-debug"
 		},
 		{
 			"name" : "bandeira_IS_TOP_LEVEL",
@@ -1155,7 +1155,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Users/danil/Desktop/Projetos/paint_cg"
+			"value" : "C:/Users/danil/Desktop/Projetos/paint_opengl"
 		}
 	],
 	"kind" : "cache",
