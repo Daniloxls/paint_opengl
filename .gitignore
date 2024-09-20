@@ -1,0 +1,5 @@
+# Ignorar a pasta .vscode e todo o seu conteúdo
+.vscode/
+
+# Ignorar todos os arquivos .exe em qualquer pasta
+*.exe
