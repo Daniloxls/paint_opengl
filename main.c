@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <windows.h>
 #include <GL/glut.h>
 #include "interface.h"
@@ -19,6 +20,7 @@ GLclampf current_color[3] = {0.0, 0.0, 0.0};
 enum State {
     LINHA,
     PONTO,
+    POLIGONO,
     DRAWING_LINE,
     DRAWING_POLYGON,
     NONE
@@ -50,6 +52,75 @@ PointNode* pointList;
 LineNode* lineList;
 enum State current_state = NONE;
 
+// COMEÇA AQUI AAAAAAAAAA
+
+typedef struct {
+    int x;
+    int y;
+} Vertice;
+
+typedef struct {
+    int qtd_Vertices;
+    Vertice *vertices;
+} Poligono;
+
+struct polygonElement {
+    Poligono poligono;
+    struct polygonElement *next;
+};
+
+typedef struct polygonElement PolygonNode;
+
+PolygonNode *polygonList = NULL; // lista de poligonos
+Poligono currentPolygon;
+
+void AddPolygon(PolygonNode **lista, Poligono poligono) {
+    for (int i = 0; i < poligono.qtd_Vertices; i++)
+    {
+        printf("[%d, %d]\n", poligono.vertices[i].x, poligono.vertices[i].y);
+    }
+    
+    PolygonNode *novoPoligono = (PolygonNode *)malloc(sizeof(PolygonNode));
+    if (novoPoligono == NULL) {
+        printf("Deu ruim aqui paee!\n");
+        exit(1);
+    }
+
+    novoPoligono->poligono = poligono;
+    novoPoligono->next = *lista;
+    *lista = novoPoligono;
+
+    for (int i = 0; i < novoPoligono->poligono.qtd_Vertices; i++)
+    {
+        printf("a[%d, %d]\n", novoPoligono->poligono.vertices[i].x, novoPoligono->poligono.vertices[i].y);
+    }
+}
+
+void PrintPolygons(PolygonNode *p) {
+    // if(current_state == DRAWING_POLYGON) {
+    //     glLineWidth(5.0f);
+    //     glBegin(GL_LINE_LOOP);
+    //     for (int i = 0; i < currentPolygon.qtd_Vertices; i++) {
+    //         glVertex2i(currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
+    //     }
+    //     glEnd();
+    //     glLineWidth(1.0f);
+    // }
+
+    PolygonNode *temp = p;
+    while (temp != NULL) {
+        if(temp == NULL) break;
+        glColor3f(0,0,0);
+        glBegin(GL_POLYGON);
+        for (int i = 0; i < temp->poligono.qtd_Vertices; i++) {
+            // printf("[%d, %d]\n", temp->poligono.vertices[i].x, temp->poligono.vertices[i].y);
+            glVertex2i(temp->poligono.vertices[i].x, temp->poligono.vertices[i].y);
+        }
+        glEnd();
+        temp = temp->next;
+    }
+}
+
 int checkPointClick(Ponto ponto, int mouse_x, int mouse_y){
     int y = window_height - mouse_y;
     int x = mouse_x;
@@ -72,17 +143,34 @@ int init(void){
 void mouse(int button, int state, int x, int y){
     if (state == GLUT_UP && button == GLUT_LEFT_BUTTON){
         if(x < 90) {
+            checkRGBSelector(x, window_height - y, interfaceButtons[RGBSelector], current_color);
             for (int i = 0; i < 4; i++) {
                 if (checkInterfaceClick(x, window_height - y, interfaceButtons[i])) {
                     switch (i) {
                     case LineButton: current_state = LINHA; break;
                     case PointButton: current_state = PONTO; break;
+                    case PolygonButton: current_state = POLIGONO; break;
                     
                     default: current_state = NONE; break;
                     }
                 }
             }
-            checkRGBSelector(x, window_height - y, interfaceButtons[RGBSelector], current_color);
+        }
+        else if (current_state == POLIGONO) {
+            currentPolygon.qtd_Vertices = 1;
+            Vertice v = {.x = x, .y = window_height - y};
+            Vertice *verticeslist = malloc(sizeof(Vertice));
+            verticeslist[0] = v;
+            currentPolygon.vertices = verticeslist;
+            current_state = DRAWING_POLYGON;
+            printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
+        }
+        else if (current_state == DRAWING_POLYGON) {
+            currentPolygon.qtd_Vertices += 1;
+            Vertice v = {.x = x, .y = window_height - y};
+            realloc(currentPolygon.vertices, currentPolygon.qtd_Vertices * sizeof(Vertice));
+            currentPolygon.vertices[currentPolygon.qtd_Vertices - 1] = v;
+            printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
         }
         else if (current_state == DRAWING_LINE){
             currentLine.coords[1][0] = x;
@@ -191,20 +279,31 @@ void mouseMove(int x, int y){
 }
 
 void teclado(unsigned char key, int x, int y){
-
-    switch(key){
-        //Quando apertar P entra no modo de desenho de pontos
-        case 112:
-            current_state = PONTO;
-            break;
-        //Quando apertar L entra no modo de desenho de linhas
-        case 108:
-            current_state = LINHA;
-            break;
-        default:
-            current_state = NONE;
-            break;
-    };
+    if(current_state == DRAWING_POLYGON && key == 13 && currentPolygon.qtd_Vertices > 2) {
+        printf("\nFechando poligono\n");
+        for (int i = 0; i < currentPolygon.qtd_Vertices; i++) {
+            printf("[%d, %d]\n", currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
+        }
+        
+        AddPolygon(&polygonList, currentPolygon);
+        current_state = POLIGONO;
+        currentPolygon.qtd_Vertices = 0;
+        free(currentPolygon.vertices);
+    } else {
+        switch(key){
+            //Quando apertar P entra no modo de desenho de pontos
+            case 112:
+                current_state = PONTO;
+                break;
+            //Quando apertar L entra no modo de desenho de linhas
+            case 108:
+                current_state = LINHA;
+                break;
+            default:
+                current_state = NONE;
+                break;
+        };
+    }
 }
 void printSinglePoint(Ponto ponto){
     glColor3f(ponto.color[0], ponto.color[1], ponto.color[2]);
@@ -254,6 +353,7 @@ void display(void){
     glutKeyboardFunc(teclado);
     printPoints();
     printLines();
+    PrintPolygons(polygonList);
     drawInterface(window_height, interfaceButtons, 5, current_color);
     glFlush();
     glClearColor(1.0f,1.0f,1.0f,0.0f);
