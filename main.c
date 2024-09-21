@@ -97,15 +97,18 @@ void AddPolygon(PolygonNode **lista, Poligono poligono) {
 }
 
 void PrintPolygons(PolygonNode *p) {
-    // if(current_state == DRAWING_POLYGON) {
-    //     glLineWidth(5.0f);
-    //     glBegin(GL_LINE_LOOP);
-    //     for (int i = 0; i < currentPolygon.qtd_Vertices; i++) {
-    //         glVertex2i(currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
-    //     }
-    //     glEnd();
-    //     glLineWidth(1.0f);
-    // }
+    if(current_state == DRAWING_POLYGON) {
+        glLineWidth(5.0f);
+        glBegin(GL_LINE_LOOP);
+        glVertex2i(currentPolygon.vertices[0].x, currentPolygon.vertices[0].y);
+        for (int i = 1; i < currentPolygon.qtd_Vertices - 1; i++) {
+            glVertex2i(currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
+            glVertex2i(currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
+        }
+        glVertex2i(currentPolygon.vertices[currentPolygon.qtd_Vertices-1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices-1].y);
+        glEnd();
+        glLineWidth(1.0f);
+    }
 
     PolygonNode *temp = p;
     while (temp != NULL) {
@@ -156,12 +159,14 @@ void mouse(int button, int state, int x, int y){
                 }
             }
         }
-        else if (current_state == POLIGONO) {
-            currentPolygon.qtd_Vertices = 1;
+        else if (current_state == POLIGONO) {          
             Vertice v = {.x = x, .y = window_height - y};
             Vertice *verticeslist = malloc(sizeof(Vertice));
             verticeslist[0] = v;
-            currentPolygon.vertices = verticeslist;
+            Poligono p;
+            p.qtd_Vertices = 1;
+            p.vertices = verticeslist;
+            currentPolygon = p;
             current_state = DRAWING_POLYGON;
             printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
         }
@@ -286,9 +291,9 @@ void teclado(unsigned char key, int x, int y){
         }
         
         AddPolygon(&polygonList, currentPolygon);
-        current_state = POLIGONO;
-        currentPolygon.qtd_Vertices = 0;
-        free(currentPolygon.vertices);
+        Poligono p;
+        currentPolygon = p;
+        current_state = NONE;
     } else {
         switch(key){
             //Quando apertar P entra no modo de desenho de pontos
