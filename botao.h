@@ -2,6 +2,8 @@
 #define PointIcon 2
 #define LineIcon 3
 #define SelectIcon 4
+#define RotateIcon 5
+#define ReSizeIcon 6
 
 typedef struct {
   int x;
@@ -15,5 +17,7 @@ enum BotaoID {
   PointButton,
   LineButton,
   SelectButton,
-  RGBSelector
+  RotateButton,
+  ResizeButton,
+  RGBSelector,
 };

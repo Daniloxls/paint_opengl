@@ -14,7 +14,7 @@ int mouse_y = 0;
 
 int tolerancia = 10;
 
-Botao interfaceButtons[5];
+Botao interfaceButtons[7];
 GLclampf current_color[3] = {0.0, 0.0, 0.0};
 
 enum State {
@@ -62,6 +62,7 @@ typedef struct {
 typedef struct {
     int qtd_Vertices;
     Vertice *vertices;
+    GLclampf color[3];
 } Poligono;
 
 struct polygonElement {
@@ -74,12 +75,7 @@ typedef struct polygonElement PolygonNode;
 PolygonNode *polygonList = NULL; // lista de poligonos
 Poligono currentPolygon;
 
-void AddPolygon(PolygonNode **lista, Poligono poligono) {
-    for (int i = 0; i < poligono.qtd_Vertices; i++)
-    {
-        printf("[%d, %d]\n", poligono.vertices[i].x, poligono.vertices[i].y);
-    }
-    
+void AddPolygon(PolygonNode **lista, Poligono poligono) {    
     PolygonNode *novoPoligono = (PolygonNode *)malloc(sizeof(PolygonNode));
     if (novoPoligono == NULL) {
         printf("Deu ruim aqui paee!\n");
@@ -89,11 +85,6 @@ void AddPolygon(PolygonNode **lista, Poligono poligono) {
     novoPoligono->poligono = poligono;
     novoPoligono->next = *lista;
     *lista = novoPoligono;
-
-    for (int i = 0; i < novoPoligono->poligono.qtd_Vertices; i++)
-    {
-        printf("a[%d, %d]\n", novoPoligono->poligono.vertices[i].x, novoPoligono->poligono.vertices[i].y);
-    }
 }
 
 void PrintPolygons(PolygonNode *p) {
@@ -113,7 +104,7 @@ void PrintPolygons(PolygonNode *p) {
     PolygonNode *temp = p;
     while (temp != NULL) {
         if(temp == NULL) break;
-        glColor3f(0,0,0);
+        glColor3f(p->poligono.color[0], p->poligono.color[1], p->poligono.color[2]);
         glBegin(GL_POLYGON);
         for (int i = 0; i < temp->poligono.qtd_Vertices; i++) {
             // printf("[%d, %d]\n", temp->poligono.vertices[i].x, temp->poligono.vertices[i].y);
@@ -161,21 +152,26 @@ void mouse(int button, int state, int x, int y){
         }
         else if (current_state == POLIGONO) {          
             Vertice v = {.x = x, .y = window_height - y};
-            Vertice *verticeslist = malloc(sizeof(Vertice));
+            Vertice *verticeslist = malloc(99 * sizeof(Vertice));
             verticeslist[0] = v;
             Poligono p;
             p.qtd_Vertices = 1;
             p.vertices = verticeslist;
+            p.color[0] = current_color[0];
+            p.color[1] = current_color[1];
+            p.color[2] = current_color[2];
             currentPolygon = p;
             current_state = DRAWING_POLYGON;
-            printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
+            // printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
         }
         else if (current_state == DRAWING_POLYGON) {
             currentPolygon.qtd_Vertices += 1;
             Vertice v = {.x = x, .y = window_height - y};
-            realloc(currentPolygon.vertices, currentPolygon.qtd_Vertices * sizeof(Vertice));
-            currentPolygon.vertices[currentPolygon.qtd_Vertices - 1] = v;
-            printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
+            Vertice *newVerticeslist = malloc(currentPolygon.qtd_Vertices * sizeof(Vertice));
+            newVerticeslist = currentPolygon.vertices;
+            newVerticeslist[currentPolygon.qtd_Vertices - 1] = v;
+            currentPolygon.vertices = newVerticeslist;
+            // printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
         }
         else if (current_state == DRAWING_LINE){
             currentLine.coords[1][0] = x;
@@ -270,7 +266,9 @@ void reshape(int newWidth, int newHeight){
     interfaceButtons[PointButton].y = window_height - 10;
     interfaceButtons[LineButton].y = window_height - 50;
     interfaceButtons[SelectButton].y = window_height - 50;
-    interfaceButtons[RGBSelector].y = window_height - 100;
+    interfaceButtons[RotateButton].y = window_height - 90;
+    interfaceButtons[RGBSelector].y = window_height - 140;
+
 
     glViewport( 0, 0, newWidth, newHeight );
     glMatrixMode( GL_PROJECTION );
@@ -285,11 +283,11 @@ void mouseMove(int x, int y){
 
 void teclado(unsigned char key, int x, int y){
     if(current_state == DRAWING_POLYGON && key == 13 && currentPolygon.qtd_Vertices > 2) {
-        printf("\nFechando poligono\n");
-        for (int i = 0; i < currentPolygon.qtd_Vertices; i++) {
-            printf("[%d, %d]\n", currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
-        }
-        
+        // printf("\nFechando poligono\n");
+        // for (int i = 0; i < currentPolygon.qtd_Vertices; i++) {
+        //     printf("[%d, %d]\n", currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
+        // }
+
         AddPolygon(&polygonList, currentPolygon);
         Poligono p;
         currentPolygon = p;
@@ -356,10 +354,10 @@ void display(void){
     glutMotionFunc(mouseMove);
     glutPassiveMotionFunc(mouseMove);
     glutKeyboardFunc(teclado);
-    printPoints();
-    printLines();
     PrintPolygons(polygonList);
-    drawInterface(window_height, interfaceButtons, 5, current_color);
+    printLines();
+    printPoints();
+    drawInterface(window_height, interfaceButtons, 7, current_color);
     glFlush();
     glClearColor(1.0f,1.0f,1.0f,0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -379,7 +377,9 @@ int main(int argc, char** argv) {
     interfaceButtons[PointButton] = (Botao){.x = 50, .y = window_height - 10, .size = 30, .icon = PointIcon};
     interfaceButtons[LineButton] = (Botao){.x = 10, .y = window_height - 50, .size = 30, .icon = LineIcon};
     interfaceButtons[SelectButton] = (Botao){.x = 50, .y = window_height - 50, .size = 30, .icon = SelectIcon};
-    interfaceButtons[RGBSelector] = (Botao){.x = 10, .y = window_height - 100, .size = 70, .icon = 0};
+    interfaceButtons[RotateButton] = (Botao){.x = 10, .y = window_height - 90, .size = 30, .icon = RotateIcon};
+    interfaceButtons[ResizeButton] = (Botao){.x = 50, .y = window_height - 90, .size = 30, .icon = ReSizeIcon};
+    interfaceButtons[RGBSelector] = (Botao){.x = 10, .y = window_height - 140, .size = 70, .icon = 0};
 
     init();
     glutDisplayFunc(display);

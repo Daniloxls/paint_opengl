@@ -1,5 +1,55 @@
 #include "botao.h"
 
+void drawResizeIcon(int x1, int y1, int iconSize)
+{
+    glLineWidth(3.0);
+    glBegin(GL_LINES);
+    glVertex2i(x1, y1 - iconSize);
+    glVertex2i(x1 + iconSize, y1);
+    glEnd();
+    glLineWidth(1.0);
+
+    glBegin(GL_POLYGON);
+    glVertex2i(x1, y1 - iconSize);
+    glVertex2i(x1, y1 - iconSize + 10);
+    glVertex2i(x1 + 10, y1 - iconSize);
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    glVertex2i(x1 + iconSize, y1);
+    glVertex2i(x1 + iconSize - 10, y1);
+    glVertex2i(x1 + iconSize, y1 - 10);
+    glEnd();
+}
+
+void drawRotateicon(int x1, int y1, int iconSize)
+{
+    glLineWidth(3.0);
+    glBegin(GL_LINES);
+    glVertex2i(x1 + 3, y1 - iconSize);
+    glVertex2i(x1 + 3, y1 - (iconSize/2) - 2);
+    glVertex2i(x1 + 3, y1 - iconSize);
+    glVertex2i(x1 + iconSize - 3, y1 - iconSize);
+    glVertex2i(x1 + 3, y1);
+    glVertex2i(x1 + iconSize - 3, y1);
+    glVertex2i(x1 + iconSize - 3, y1);
+    glVertex2i(x1 + iconSize - 3, y1 - (iconSize/2) + 2);
+    glEnd();
+    glLineWidth(1.0);
+
+    glBegin(GL_POLYGON);
+    glVertex2i(x1 - 1, y1 - (iconSize/2) - 2);
+    glVertex2i(x1 + 7, y1 - (iconSize/2) - 2);
+    glVertex2i(x1 + 3, y1 - (iconSize/2) + 4);
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    glVertex2i(x1 + iconSize + 1, y1 - (iconSize/2) + 2);
+    glVertex2i(x1 + iconSize - 7, y1 - (iconSize/2) + 2);
+    glVertex2i(x1 + iconSize - 3, y1 - (iconSize/2) - 4);
+    glEnd();
+}
+
 void drawPolygonIcon(int x1, int y1, int iconSize)
 {
     glLineWidth(2.0);
@@ -73,9 +123,15 @@ void drawButton(int x1, int y1, int buttonSize, int iconType)
     case 3:
         drawLineIcon(x1 + 5, y1 - buttonSize + 5, 20);
         break;
+    case 4:
+        drawSelectIcon(x1 + 5, y1 - 5, 20);
+        break;
+    case 5:
+        drawRotateicon(x1 + 5, y1 - 5, 20);
+        break;
 
     default:
-        drawSelectIcon(x1 + 5, y1 - 5, 20);
+        drawResizeIcon(x1 + 5, y1 - 5, 20);
         break;
     }
 }
@@ -184,7 +240,7 @@ void drawInterface(int window_height, Botao botoes[], int tam, GLclampf current_
     glVertex2i(0, window_height);
     glEnd();
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < tam - 1; i++)
         drawButton(botoes[i].x, botoes[i].y, botoes[i].size, botoes[i].icon);
     drawSelectorRGB(botoes[RGBSelector].x, botoes[RGBSelector].y,
                     botoes[RGBSelector].size, current_color);
