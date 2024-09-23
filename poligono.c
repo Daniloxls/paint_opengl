@@ -42,6 +42,7 @@ void PrintPolygons(PolygonNode *p, enum State current_state, Poligono currentPol
 
 int checkPoligonoClick(Poligono poligono, int mouse_x, int mouse_y, int window_height, int tolerancia){
     int acertos = 0;
+    int y = window_height - mouse_y;
     for (int i = window_height - mouse_y; i <= window_height; i++ ){
         for(int j = 0; j < poligono.qtd_Vertices - 1; j++){
             Linha aresta;
