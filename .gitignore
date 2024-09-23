@@ -3,3 +3,4 @@
 
 # Ignorar todos os arquivos .exe em qualquer pasta
 *.exe
+*.sh

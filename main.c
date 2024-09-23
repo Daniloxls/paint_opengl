@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <windows.h>
 #include <GL/glut.h>
+#include "interface.h"
 
 int window_height = 576;
 int window_width = 1024;
@@ -12,9 +14,13 @@ int mouse_y = 0;
 
 int tolerancia = 10;
 
+Botao interfaceButtons[7];
+GLclampf current_color[3] = {0.0, 0.0, 0.0};
+
 enum State {
     LINHA,
     PONTO,
+    POLIGONO,
     DRAWING_LINE,
     DRAWING_POLYGON,
     NONE
@@ -46,6 +52,69 @@ PointNode* pointList;
 LineNode* lineList;
 enum State current_state = NONE;
 
+// COMEÇA AQUI AAAAAAAAAA
+
+typedef struct {
+    int x;
+    int y;
+} Vertice;
+
+typedef struct {
+    int qtd_Vertices;
+    Vertice *vertices;
+    GLclampf color[3];
+} Poligono;
+
+struct polygonElement {
+    Poligono poligono;
+    struct polygonElement *next;
+};
+
+typedef struct polygonElement PolygonNode;
+
+PolygonNode *polygonList = NULL; // lista de poligonos
+Poligono currentPolygon;
+
+void AddPolygon(PolygonNode **lista, Poligono poligono) {    
+    PolygonNode *novoPoligono = (PolygonNode *)malloc(sizeof(PolygonNode));
+    if (novoPoligono == NULL) {
+        printf("Deu ruim aqui paee!\n");
+        exit(1);
+    }
+
+    novoPoligono->poligono = poligono;
+    novoPoligono->next = *lista;
+    *lista = novoPoligono;
+}
+
+void PrintPolygons(PolygonNode *p) {
+    if(current_state == DRAWING_POLYGON) {
+        glLineWidth(5.0f);
+        glBegin(GL_LINE_LOOP);
+        glVertex2i(currentPolygon.vertices[0].x, currentPolygon.vertices[0].y);
+        for (int i = 1; i < currentPolygon.qtd_Vertices - 1; i++) {
+            glVertex2i(currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
+            glVertex2i(currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
+        }
+        glVertex2i(currentPolygon.vertices[currentPolygon.qtd_Vertices-1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices-1].y);
+        glEnd();
+        glLineWidth(1.0f);
+    }
+
+    PolygonNode *temp = p;
+    while (temp != NULL) {
+        if(temp == NULL) break;
+        glColor3f(p->poligono.color[0], p->poligono.color[1], p->poligono.color[2]);
+        glBegin(GL_POLYGON);
+        for (int i = 0; i < temp->poligono.qtd_Vertices; i++) {
+            // printf("[%d, %d]\n", temp->poligono.vertices[i].x, temp->poligono.vertices[i].y);
+            glVertex2i(temp->poligono.vertices[i].x, temp->poligono.vertices[i].y);
+        }
+        glEnd();
+        temp = temp->next;
+    }
+}
+
 int checkPointClick(Ponto ponto, int mouse_x, int mouse_y){
     int y = window_height - mouse_y;
     int x = mouse_x;
@@ -67,7 +136,44 @@ int init(void){
 
 void mouse(int button, int state, int x, int y){
     if (state == GLUT_UP && button == GLUT_LEFT_BUTTON){
-        if (current_state == DRAWING_LINE){
+        if(x < 90) {
+            checkRGBSelector(x, window_height - y, interfaceButtons[RGBSelector], current_color);
+            for (int i = 0; i < 4; i++) {
+                if (checkInterfaceClick(x, window_height - y, interfaceButtons[i])) {
+                    switch (i) {
+                    case LineButton: current_state = LINHA; break;
+                    case PointButton: current_state = PONTO; break;
+                    case PolygonButton: current_state = POLIGONO; break;
+                    
+                    default: current_state = NONE; break;
+                    }
+                }
+            }
+        }
+        else if (current_state == POLIGONO) {          
+            Vertice v = {.x = x, .y = window_height - y};
+            Vertice *verticeslist = malloc(99 * sizeof(Vertice));
+            verticeslist[0] = v;
+            Poligono p;
+            p.qtd_Vertices = 1;
+            p.vertices = verticeslist;
+            p.color[0] = current_color[0];
+            p.color[1] = current_color[1];
+            p.color[2] = current_color[2];
+            currentPolygon = p;
+            current_state = DRAWING_POLYGON;
+            // printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
+        }
+        else if (current_state == DRAWING_POLYGON) {
+            currentPolygon.qtd_Vertices += 1;
+            Vertice v = {.x = x, .y = window_height - y};
+            Vertice *newVerticeslist = malloc(currentPolygon.qtd_Vertices * sizeof(Vertice));
+            newVerticeslist = currentPolygon.vertices;
+            newVerticeslist[currentPolygon.qtd_Vertices - 1] = v;
+            currentPolygon.vertices = newVerticeslist;
+            // printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
+        }
+        else if (current_state == DRAWING_LINE){
             currentLine.coords[1][0] = x;
             currentLine.coords[1][1] = window_height - y;
             Linha novaLinha = currentLine;
@@ -94,9 +200,9 @@ void mouse(int button, int state, int x, int y){
         else if (current_state == LINHA){
             currentLine.coords[0][0] = x;
             currentLine.coords[0][1] = window_height - y;
-            currentLine.color[0] = 0.0f;
-            currentLine.color[1] = 0.0f;
-            currentLine.color[2] = 0.0f;
+            currentLine.color[0] = current_color[0];
+            currentLine.color[1] = current_color[1];
+            currentLine.color[2] = current_color[2];
             current_state = DRAWING_LINE;
         }
 
@@ -107,9 +213,9 @@ void mouse(int button, int state, int x, int y){
             Ponto novoPonto;
             novoPonto.x = x;
             novoPonto.y = window_height - y;
-            novoPonto.color[0] = 0.0f;
-            novoPonto.color[1] = 0.0f;
-            novoPonto.color[2] = 0.0f;
+            novoPonto.color[0] = current_color[0];
+            novoPonto.color[1] = current_color[1];
+            novoPonto.color[2] = current_color[2];
             if (pointList) {
                 PointNode *temp = pointList;
                 PointNode *back = NULL;
@@ -155,6 +261,15 @@ void mouse(int button, int state, int x, int y){
 void reshape(int newWidth, int newHeight){
     window_width = newWidth;
     window_height = newHeight;
+
+    interfaceButtons[PolygonButton].y = window_height - 10;
+    interfaceButtons[PointButton].y = window_height - 10;
+    interfaceButtons[LineButton].y = window_height - 50;
+    interfaceButtons[SelectButton].y = window_height - 50;
+    interfaceButtons[RotateButton].y = window_height - 90;
+    interfaceButtons[RGBSelector].y = window_height - 140;
+
+
     glViewport( 0, 0, newWidth, newHeight );
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
@@ -167,20 +282,31 @@ void mouseMove(int x, int y){
 }
 
 void teclado(unsigned char key, int x, int y){
+    if(current_state == DRAWING_POLYGON && key == 13 && currentPolygon.qtd_Vertices > 2) {
+        // printf("\nFechando poligono\n");
+        // for (int i = 0; i < currentPolygon.qtd_Vertices; i++) {
+        //     printf("[%d, %d]\n", currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
+        // }
 
-    switch(key){
-        //Quando apertar P entra no modo de desenho de pontos
-        case 112:
-            current_state = PONTO;
-            break;
-        //Quando apertar L entra no modo de desenho de linhas
-        case 108:
-            current_state = LINHA;
-            break;
-        default:
-            current_state = NONE;
-            break;
-    };
+        AddPolygon(&polygonList, currentPolygon);
+        Poligono p;
+        currentPolygon = p;
+        current_state = NONE;
+    } else {
+        switch(key){
+            //Quando apertar P entra no modo de desenho de pontos
+            case 112:
+                current_state = PONTO;
+                break;
+            //Quando apertar L entra no modo de desenho de linhas
+            case 108:
+                current_state = LINHA;
+                break;
+            default:
+                current_state = NONE;
+                break;
+        };
+    }
 }
 void printSinglePoint(Ponto ponto){
     glColor3f(ponto.color[0], ponto.color[1], ponto.color[2]);
@@ -228,8 +354,10 @@ void display(void){
     glutMotionFunc(mouseMove);
     glutPassiveMotionFunc(mouseMove);
     glutKeyboardFunc(teclado);
-    printPoints();
+    PrintPolygons(polygonList);
     printLines();
+    printPoints();
+    drawInterface(window_height, interfaceButtons, 7, current_color);
     glFlush();
     glClearColor(1.0f,1.0f,1.0f,0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -244,6 +372,14 @@ int main(int argc, char** argv) {
     int y = 100;
     glutInitWindowPosition(x,y);
     glutCreateWindow("Paint");
+
+    interfaceButtons[PolygonButton] = (Botao){.x = 10, .y = window_height - 10, .size = 30, .icon = PolygonIcon};
+    interfaceButtons[PointButton] = (Botao){.x = 50, .y = window_height - 10, .size = 30, .icon = PointIcon};
+    interfaceButtons[LineButton] = (Botao){.x = 10, .y = window_height - 50, .size = 30, .icon = LineIcon};
+    interfaceButtons[SelectButton] = (Botao){.x = 50, .y = window_height - 50, .size = 30, .icon = SelectIcon};
+    interfaceButtons[RotateButton] = (Botao){.x = 10, .y = window_height - 90, .size = 30, .icon = RotateIcon};
+    interfaceButtons[ResizeButton] = (Botao){.x = 50, .y = window_height - 90, .size = 30, .icon = ReSizeIcon};
+    interfaceButtons[RGBSelector] = (Botao){.x = 10, .y = window_height - 140, .size = 70, .icon = 0};
 
     init();
     glutDisplayFunc(display);
