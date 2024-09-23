@@ -3,127 +3,32 @@
 #include <windows.h>
 #include <GL/glut.h>
 #include "interface.h"
+#include "linha.h"
+#include "ponto.h"
+#include "poligono.h"
 
 int window_height = 576;
 int window_width = 1024;
 float proportion_x = 204.8f/1024;
 float proportion_y = 115.2f/576;
-
 int mouse_x = 0;
 int mouse_y = 0;
-
 int tolerancia = 10;
-
 Botao interfaceButtons[7];
 GLclampf current_color[3] = {0.0, 0.0, 0.0};
-
-enum State {
-    LINHA,
-    PONTO,
-    POLIGONO,
-    DRAWING_LINE,
-    DRAWING_POLYGON,
-    NONE
-};
-
-typedef struct ponto{
-    int x;
-    int y;
-    GLclampf color[3];
-}Ponto;
-
-typedef struct linha{
-    int coords[2][2];
-    GLclampf color[3];
-}Linha;
-
-typedef struct points {
-    struct ponto val;
-    struct points *next;
-}PointNode;
-
-typedef struct lines{
-    struct linha val;
-    struct lines *next;
-}LineNode;
-
 Linha currentLine;
 PointNode* pointList;
 LineNode* lineList;
 enum State current_state = NONE;
 
+
 // COMEÇA AQUI AAAAAAAAAA
 
-typedef struct {
-    int x;
-    int y;
-} Vertice;
 
-typedef struct {
-    int qtd_Vertices;
-    Vertice *vertices;
-    GLclampf color[3];
-} Poligono;
-
-struct polygonElement {
-    Poligono poligono;
-    struct polygonElement *next;
-};
-
-typedef struct polygonElement PolygonNode;
 
 PolygonNode *polygonList = NULL; // lista de poligonos
 Poligono currentPolygon;
 
-void AddPolygon(PolygonNode **lista, Poligono poligono) {    
-    PolygonNode *novoPoligono = (PolygonNode *)malloc(sizeof(PolygonNode));
-    if (novoPoligono == NULL) {
-        printf("Deu ruim aqui paee!\n");
-        exit(1);
-    }
-
-    novoPoligono->poligono = poligono;
-    novoPoligono->next = *lista;
-    *lista = novoPoligono;
-}
-
-void PrintPolygons(PolygonNode *p) {
-    if(current_state == DRAWING_POLYGON) {
-        glLineWidth(5.0f);
-        glBegin(GL_LINE_LOOP);
-        glVertex2i(currentPolygon.vertices[0].x, currentPolygon.vertices[0].y);
-        for (int i = 1; i < currentPolygon.qtd_Vertices - 1; i++) {
-            glVertex2i(currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
-            glVertex2i(currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
-        }
-        glVertex2i(currentPolygon.vertices[currentPolygon.qtd_Vertices-1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices-1].y);
-        glEnd();
-        glLineWidth(1.0f);
-    }
-
-    PolygonNode *temp = p;
-    while (temp != NULL) {
-        if(temp == NULL) break;
-        glColor3f(p->poligono.color[0], p->poligono.color[1], p->poligono.color[2]);
-        glBegin(GL_POLYGON);
-        for (int i = 0; i < temp->poligono.qtd_Vertices; i++) {
-            // printf("[%d, %d]\n", temp->poligono.vertices[i].x, temp->poligono.vertices[i].y);
-            glVertex2i(temp->poligono.vertices[i].x, temp->poligono.vertices[i].y);
-        }
-        glEnd();
-        temp = temp->next;
-    }
-}
-
-int checkPointClick(Ponto ponto, int mouse_x, int mouse_y){
-    int y = window_height - mouse_y;
-    int x = mouse_x;
-    if((x - tolerancia <= ponto.x && ponto.x <= x + tolerancia) &&
-    (y - tolerancia <= ponto.y && ponto.y <= y + tolerancia)){
-        return 1;
-    }
-    return 0;
-}
 
 int init(void){
     GLclampf Red = 1.0f, Green = 1.0f, Blue = 1.0f, Alpha = 0.0f;
@@ -144,13 +49,13 @@ void mouse(int button, int state, int x, int y){
                     case LineButton: current_state = LINHA; break;
                     case PointButton: current_state = PONTO; break;
                     case PolygonButton: current_state = POLIGONO; break;
-                    
+
                     default: current_state = NONE; break;
                     }
                 }
             }
         }
-        else if (current_state == POLIGONO) {          
+        else if (current_state == POLIGONO) {
             Vertice v = {.x = x, .y = window_height - y};
             Vertice *verticeslist = malloc(99 * sizeof(Vertice));
             verticeslist[0] = v;
@@ -233,6 +138,7 @@ void mouse(int button, int state, int x, int y){
                 pointList->next = NULL;
             }
         }
+
     }
     if (state == GLUT_DOWN && button == GLUT_RIGHT_BUTTON){
         if (pointList != NULL) {
@@ -240,10 +146,50 @@ void mouse(int button, int state, int x, int y){
             PointNode* back = NULL;
 
             while (temp) {
-                if (checkPointClick(temp->val, x, y)) {
+                if (checkPointClick(temp->val, x, y, window_height, tolerancia)) {
                     PointNode* nextNode = temp->next;
                     if (back == NULL) {
                         pointList = nextNode;
+                    } else {
+                        back->next = nextNode;
+                    }
+                    free(temp);
+                    temp = nextNode;
+                } else {
+                    back = temp;
+                    temp = temp->next;
+                }
+            }
+        }
+        if (lineList != NULL) {
+            LineNode* temp = lineList;
+            LineNode* back = NULL;
+
+            while (temp) {
+                if (checkLineClick(temp->val, x, y, window_height, tolerancia)) {
+                    LineNode* nextNode = temp->next;
+                    if (back == NULL) {
+                        lineList = nextNode;
+                    } else {
+                        back->next = nextNode;
+                    }
+                    free(temp);
+                    temp = nextNode;
+                } else {
+                    back = temp;
+                    temp = temp->next;
+                }
+            }
+        }
+        if (polygonList != NULL) {
+            PolygonNode* temp = polygonList;
+            PolygonNode* back = NULL;
+
+            while (temp) {
+                if (checkPoligonoClick(temp->poligono, x, y, window_height, tolerancia)) {
+                    PolygonNode* nextNode = temp->next;
+                    if (back == NULL) {
+                        polygonList = nextNode;
                     } else {
                         back->next = nextNode;
                     }
@@ -308,45 +254,7 @@ void teclado(unsigned char key, int x, int y){
         };
     }
 }
-void printSinglePoint(Ponto ponto){
-    glColor3f(ponto.color[0], ponto.color[1], ponto.color[2]);
-    glBegin(GL_POINTS);
-        glVertex2i(ponto.x,ponto.y);
-    glEnd();
-}
 
-void printPoints(){
-    if (pointList){
-        PointNode* temp = pointList;
-        while(temp){
-            printSinglePoint(temp->val);
-            temp = temp->next;
-        }
-    }
-}
-
-void printSingleLine(Linha linha){
-    glColor3f(linha.color[0], linha.color[1], linha.color[2]);
-    glBegin(GL_LINES);
-    glVertex2i(linha.coords[0][0],linha.coords[0][1]);
-    glVertex2i(linha.coords[1][0],linha.coords[1][1]);
-    glEnd();
-}
-
-void printLines(){
-    if (current_state == DRAWING_LINE){
-        currentLine.coords[1][0] = mouse_x;
-        currentLine.coords[1][1] = window_height - mouse_y;
-        printSingleLine(currentLine);
-    }
-    if (lineList){
-        LineNode* temp = lineList;
-        while(temp){
-            printSingleLine(temp->val);
-            temp = temp->next;
-        }
-    }
-}
 
 void display(void){
     glutMouseFunc(mouse);
@@ -354,9 +262,9 @@ void display(void){
     glutMotionFunc(mouseMove);
     glutPassiveMotionFunc(mouseMove);
     glutKeyboardFunc(teclado);
-    PrintPolygons(polygonList);
-    printLines();
-    printPoints();
+    PrintPolygons(polygonList, current_state, currentPolygon);
+    printLines(current_state, currentLine, lineList,mouse_x, mouse_y, window_height);
+    printPoints(pointList);
     drawInterface(window_height, interfaceButtons, 7, current_color);
     glFlush();
     glClearColor(1.0f,1.0f,1.0f,0.0f);

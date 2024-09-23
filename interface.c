@@ -1,4 +1,5 @@
 #include "botao.h"
+#include <GL/glut.h>
 
 void drawResizeIcon(int x1, int y1, int iconSize)
 {
@@ -279,3 +280,4 @@ void checkRGBSelector(int x, int y, Botao b, GLclampf *current_color)
         current_color[2] = (((float)x - (float)b.x) / (float)b.size);
     }
 }
+

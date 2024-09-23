@@ -5,6 +5,10 @@
 #define RotateIcon 5
 #define ReSizeIcon 6
 
+
+#ifndef BOTAO_H
+#define BOTAO_H
+
 typedef struct {
   int x;
   int y;
@@ -21,3 +25,6 @@ enum BotaoID {
   ResizeButton,
   RGBSelector,
 };
+
+
+#endif
