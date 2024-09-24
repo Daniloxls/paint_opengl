@@ -42,12 +42,16 @@ void mouse(int button, int state, int x, int y){
     if (state == GLUT_UP && button == GLUT_LEFT_BUTTON){
         if(x < 90) {
             checkRGBSelector(x, window_height - y, interfaceButtons[RGBSelector], current_color);
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 9; i++) {
                 if (checkInterfaceClick(x, window_height - y, interfaceButtons[i])) {
                     switch (i) {
-                    case LineButton: current_state = LINHA; break;
-                    case PointButton: current_state = PONTO; break;
-                    case PolygonButton: current_state = POLIGONO; break;
+                    case LineButton: current_state = LINHA; pontoSelecionado = NULL; linhaSelecionada = NULL; poligonoSelecionado = NULL; break;
+                    case PointButton: current_state = PONTO; pontoSelecionado = NULL; linhaSelecionada = NULL; poligonoSelecionado = NULL; break;
+                    case PolygonButton: current_state = POLIGONO; pontoSelecionado = NULL; linhaSelecionada = NULL; poligonoSelecionado = NULL; break;
+                    case ResizeButton: current_state = ESCALA; break;
+                    case RotateButton: current_state = ROTACAO; break;
+                    case ReflexButton: current_state = ESPELHAMENTO; break;
+                    case ShearButton: current_state = CISALHAMENTO; break;
 
                     default: current_state = NONE; break;
                     }
@@ -127,7 +131,7 @@ void mouse(int button, int state, int x, int y){
                         back = temp;
                         temp = temp->next;
                     }
-                    pontoSelecionado = NULL;
+                    if(x > 90) pontoSelecionado = NULL;
                 }
             }
             if (lineList != NULL) {
@@ -145,6 +149,7 @@ void mouse(int button, int state, int x, int y){
                         back = temp;
                         temp = temp->next;
                     }
+                    if(x > 90) linhaSelecionada = NULL;
                 }
             }
         }
@@ -251,7 +256,9 @@ void reshape(int newWidth, int newHeight){
     interfaceButtons[SelectButton].y = window_height - 50;
     interfaceButtons[RotateButton].y = window_height - 90;
     interfaceButtons[ResizeButton].y = window_height - 90;
-    interfaceButtons[RGBSelector].y = window_height - 140;
+    interfaceButtons[ReflexButton].y = window_height - 130;
+    interfaceButtons[ShearButton].y = window_height - 130;
+    interfaceButtons[RGBSelector].y = window_height - 170;
 
 
     glViewport( 0, 0, newWidth, newHeight );
@@ -271,7 +278,9 @@ void teclado(unsigned char key, int x, int y){
         Poligono p;
         currentPolygon = p;
         current_state = NONE;
-    } else if (current_state == NONE && pontoSelecionado != NULL) {
+    }
+    // operações do ponto
+    else if (current_state == NONE && pontoSelecionado != NULL) {
         switch(key){
             case 97: // A
                 transladar(-5, 0, &pontoSelecionado->vertice, 1);
@@ -285,15 +294,21 @@ void teclado(unsigned char key, int x, int y){
             case 115: // S
                 transladar(0, -5, &pontoSelecionado->vertice, 1);
                 break;
-            case 44: // ,
+            default: break;
+        };
+    } else if (current_state == ROTACAO && pontoSelecionado != NULL) {
+        switch(key){
+            case 97: // A
                 rotacionar(1, &pontoSelecionado->vertice, 1);
                 break;
-            case 46: // .
+            case 100: // D
                 rotacionar(-1, &pontoSelecionado->vertice, 1);
                 break;
             default: break;
         };
-    } else if (current_state == NONE && linhaSelecionada != NULL) {
+    }
+    // operações da linha
+    else if (current_state == NONE && linhaSelecionada != NULL) {
         Vertice centro;
         getCentro(&linhaSelecionada->coords, 2, &centro);
         switch(key){
@@ -309,25 +324,87 @@ void teclado(unsigned char key, int x, int y){
             case 115: // S
                 transladar(0, -5, &linhaSelecionada->coords, 2);
                 break;
-            case 44: // ,
+            default: break;
+        };
+    } else if (current_state == ROTACAO && linhaSelecionada != NULL) {
+        Vertice centro;
+        getCentro(&linhaSelecionada->coords, 2, &centro);
+        switch(key){
+            case 97: // A
                 transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
                 rotacionar(1, &linhaSelecionada->coords, 2);
                 transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
                 break;
-            case 46: // .
+            case 100: // D
                 transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
                 rotacionar(-1, &linhaSelecionada->coords, 2);
                 transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
                 break;
-            case 61: // = ou +
+            default: break;
+        };
+    } else if (current_state == ESCALA && linhaSelecionada != NULL) {
+        Vertice centro;
+        getCentro(&linhaSelecionada->coords, 2, &centro);
+        switch(key){
+            case 119: // W
                 transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
                 escalar(1.5, 1.5, &linhaSelecionada->coords, 2);
                 transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
                 break;
-            case 45: // - ou _
+            case 115: // S
                 transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
                 escalar(0.5, 0.5, &linhaSelecionada->coords, 2);
                 transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            default: break;
+        };
+    } else if (current_state == CISALHAMENTO && linhaSelecionada != NULL) {
+        Vertice centro;
+        getCentro(&linhaSelecionada->coords, 2, &centro);
+        switch(key){
+            case 119: // W
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                cisalhamento_y(0.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 115: // S
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                cisalhamento_y(-0.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 97: // A
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                cisalhamento_x(-0.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 100: // D
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                cisalhamento_x(0.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            default: break;
+        };
+    } else if (current_state == ESPELHAMENTO && linhaSelecionada != NULL) {
+        Vertice centro;
+        getCentro(&linhaSelecionada->coords, 2, &centro);
+        switch(key){
+            case 119: // W
+                reflexao_x(&linhaSelecionada->coords, 2);
+                break;
+            case 115: // S
+                reflexao_x(&linhaSelecionada->coords, 2);
+                break;
+            case 97: // A
+                reflexao_y(&linhaSelecionada->coords, 2);
+                break;
+            case 100: // D
+                reflexao_y(&linhaSelecionada->coords, 2);
+                break;
+            case 113: // Q
+                reflexao_xy(&linhaSelecionada->coords, 2);
+                break;
+            case 101: // E
+                reflexao_xy(&linhaSelecionada->coords, 2);
                 break;
             default: break;
         };

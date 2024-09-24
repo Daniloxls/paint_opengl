@@ -7,6 +7,10 @@ enum State {
     POLIGONO,
     DRAWING_LINE,
     DRAWING_POLYGON,
+    ROTACAO,
+    ESCALA,
+    ESPELHAMENTO,
+    CISALHAMENTO,
     NONE
 };
 

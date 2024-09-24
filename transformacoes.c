@@ -99,3 +99,63 @@ void cisalhamento_y(GLfloat c, Vertice *vertices, int qtd_vertices) {
     AplicarTransf(matriz, vertices, qtd_vertices);
 }
 
+void reflexao_x(Vertice *vertices, int qtd_vertices) {
+    GLfloat matriz[3][3] = {
+        {1.0, 0.0, 0.0},
+        {0.0, -1.0, 0.0},
+        {0.0, 0.0, 1.0}
+    };
+
+    printf("Antes:\n");
+    for(int i = 0; i < qtd_vertices; i++) {
+        printf("[%.4f, %.4f]\n", vertices[i].x, vertices[i].y);
+    }
+
+    AplicarTransf(matriz, vertices, qtd_vertices);
+
+    printf("Depois:\n");
+    for(int i = 0; i < qtd_vertices; i++) {
+        printf("[%.4f, %.4f]\n", vertices[i].x, vertices[i].y);
+    }
+}
+
+
+void reflexao_y(Vertice *vertices, int qtd_vertices) {
+    GLfloat matriz[3][3] = {
+        {-1.0, 0.0, 0.0},
+        {0.0, 1.0, 0.0},
+        {0.0, 0.0, 1.0}
+    };
+
+    printf("Antes:\n");
+    for(int i = 0; i < qtd_vertices; i++) {
+        printf("[%.4f, %.4f]\n", vertices[i].x, vertices[i].y);
+    }
+
+    AplicarTransf(matriz, vertices, qtd_vertices);
+
+    printf("Depois:\n");
+    for(int i = 0; i < qtd_vertices; i++) {
+        printf("[%.4f, %.4f]\n", vertices[i].x, vertices[i].y);
+    }
+}
+
+void reflexao_xy(Vertice *vertices, int qtd_vertices) {
+    GLfloat matriz[3][3] = {
+        {-1.0, 0.0, 0.0},
+        {0.0, -1.0, 0.0},
+        {0.0, 0.0, 1.0}
+    };
+
+    printf("Antes:\n");
+    for(int i = 0; i < qtd_vertices; i++) {
+        printf("[%.4f, %.4f]\n", vertices[i].x, vertices[i].y);
+    }
+
+    AplicarTransf(matriz, vertices, qtd_vertices);
+
+    printf("Depois:\n");
+    for(int i = 0; i < qtd_vertices; i++) {
+        printf("[%.4f, %.4f]\n", vertices[i].x, vertices[i].y);
+    }
+}

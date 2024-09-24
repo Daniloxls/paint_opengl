@@ -13,5 +13,8 @@ void rotacionar(GLfloat, Vertice *, int);
 void escalar(GLfloat, GLfloat, Vertice *, int);
 void cisalhamento_x(GLfloat, Vertice *, int);
 void cisalhamento_y(GLfloat, Vertice *, int);
+void reflexao_x(Vertice *, int);
+void reflexao_y(Vertice *, int);
+void reflexao_xy(Vertice *, int);
 
 #endif //TRANSFORMACOES_H
