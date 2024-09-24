@@ -6,6 +6,7 @@
 #include "linha.h"
 #include "ponto.h"
 #include "poligono.h"
+#include "transformacoes.h"
 
 int window_height = 576;
 int window_width = 1024;
@@ -16,19 +17,15 @@ int mouse_y = 0;
 int tolerancia = 10;
 Botao interfaceButtons[7];
 GLclampf current_color[3] = {0.0, 0.0, 0.0};
-Linha currentLine;
-PointNode* pointList;
-LineNode* lineList;
 enum State current_state = NONE;
 
-
-// COMEÇA AQUI AAAAAAAAAA
-
-
-
+PointNode* pointList;
+LineNode* lineList;
 PolygonNode *polygonList = NULL; // lista de poligonos
+Linha currentLine;
 Poligono currentPolygon;
 
+Ponto *pontoSelecionado = NULL;
 
 int init(void){
     GLclampf Red = 1.0f, Green = 1.0f, Blue = 1.0f, Alpha = 0.0f;
@@ -113,6 +110,23 @@ void mouse(int button, int state, int x, int y){
 
     }
     if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON){
+        if(current_state == NONE) {
+            if (pointList != NULL) {
+                PointNode* temp = pointList;
+                PointNode* back = NULL;
+
+                while (temp) {
+                    if (checkPointClick(temp->val, x, y, window_height, tolerancia)) {
+                        pontoSelecionado = temp;
+                        break;
+                    } else {
+                        back = temp;
+                        temp = temp->next;
+                    }
+                    pontoSelecionado = NULL;
+                }
+            }
+        }
 
         if(current_state == PONTO){
             Ponto novoPonto;
@@ -213,6 +227,7 @@ void reshape(int newWidth, int newHeight){
     interfaceButtons[LineButton].y = window_height - 50;
     interfaceButtons[SelectButton].y = window_height - 50;
     interfaceButtons[RotateButton].y = window_height - 90;
+    interfaceButtons[ResizeButton].y = window_height - 90;
     interfaceButtons[RGBSelector].y = window_height - 140;
 
 
@@ -229,15 +244,32 @@ void mouseMove(int x, int y){
 
 void teclado(unsigned char key, int x, int y){
     if(current_state == DRAWING_POLYGON && key == 13 && currentPolygon.qtd_Vertices > 2) {
-        // printf("\nFechando poligono\n");
-        // for (int i = 0; i < currentPolygon.qtd_Vertices; i++) {
-        //     printf("[%d, %d]\n", currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
-        // }
-
         AddPolygon(&polygonList, currentPolygon);
         Poligono p;
         currentPolygon = p;
         current_state = NONE;
+    } else if (current_state == NONE && pontoSelecionado != NULL) {
+        switch(key){
+            case 97: // A
+                transladarPonto(-5, 0, pontoSelecionado);
+                break;
+            case 100: // D
+                transladarPonto(5, 0, pontoSelecionado);
+                break;
+            case 119: // W
+                transladarPonto(0, 5, pontoSelecionado);
+                break;
+            case 115: // S
+                transladarPonto(0, -5, pontoSelecionado);
+                break;
+            case 44: // ,
+                rotacionarPonto(1, pontoSelecionado);
+                break;
+            case 46: // .
+                rotacionarPonto(-1, pontoSelecionado);
+                break;
+            default: break;
+        };
     } else {
         switch(key){
             //Quando apertar P entra no modo de desenho de pontos
@@ -254,7 +286,6 @@ void teclado(unsigned char key, int x, int y){
         };
     }
 }
-
 
 void display(void){
     glutMouseFunc(mouse);

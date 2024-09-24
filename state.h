@@ -1,6 +1,3 @@
-//
-// Created by danil on 23/09/2024.
-//
 #ifndef STATE_H
 #define STATE_H
 

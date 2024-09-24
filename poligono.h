@@ -1,12 +1,9 @@
-//
-// Created by danil on 23/09/2024.
-//
-
 #ifndef BANDEIRA_POLIGONO_H
 #define BANDEIRA_POLIGONO_H
 
 #include <GL/glut.h>
 #include "state.h"
+
 typedef struct {
     int x;
     int y;

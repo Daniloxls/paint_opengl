@@ -1,4 +1,3 @@
-
 #include "botao.h"
 
 #ifndef INTERFACE_H
@@ -6,6 +5,8 @@
 
 void drawPolygonIcon(int, int, int);
 void drawSelectIcon(int, int, int);
+void drawRotateicon(int, int, int);
+void drawResizeIcon(int, int, int);
 void drawLineIcon(int, int, int);
 void drawPointIcon(int, int);
 void drawButton(int, int, int, int);

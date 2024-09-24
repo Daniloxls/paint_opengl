@@ -1,6 +1,3 @@
-//
-// Created by danil on 23/09/2024.
-//
 #include "state.h"
 
 #ifndef PONTO_H
@@ -11,8 +8,6 @@ typedef struct ponto{
     int y;
     GLclampf color[3];
 } Ponto ;
-
-
 
 typedef struct points {
     struct ponto val;
