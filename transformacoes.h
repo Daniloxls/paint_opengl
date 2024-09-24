@@ -5,12 +5,13 @@
 #include "poligono.h"
 #include "ponto.h"
 
-Vertice *getCentro(Vertice[], int);
+void desenharSelecao(Vertice *, int);
+void getCentro(Vertice[], int, Vertice*);
 void AplicarTransf(GLfloat[3][3], Vertice*, int);
 void transladar(GLfloat, GLfloat, Vertice *, int);
-void transladarPonto(int, int, Ponto*);
-void rotacionarPonto(int, Ponto*);
-void rotacionar();
-void escalar();
+void rotacionar(GLfloat, Vertice *, int);
+void escalar(GLfloat, GLfloat, Vertice *, int);
+void cisalhamento_x(GLfloat, Vertice *, int);
+void cisalhamento_y(GLfloat, Vertice *, int);
 
 #endif //TRANSFORMACOES_H

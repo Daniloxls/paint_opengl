@@ -3,11 +3,7 @@
 
 #include <GL/glut.h>
 #include "state.h"
-
-typedef struct {
-    int x;
-    int y;
-} Vertice;
+#include "ponto.h"
 
 typedef struct {
     int qtd_Vertices;

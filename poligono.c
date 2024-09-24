@@ -46,10 +46,10 @@ int checkPoligonoClick(Poligono poligono, int mouse_x, int mouse_y, int window_h
     for (int i = window_height - mouse_y; i <= window_height; i++ ){
         for(int j = 0; j < poligono.qtd_Vertices - 1; j++){
             Linha aresta;
-            aresta.coords[0][0] = poligono.vertices[j].x;
-            aresta.coords[0][1] = poligono.vertices[j].y;
-            aresta.coords[1][0] = poligono.vertices[j + 1].x;
-            aresta.coords[1][1] = poligono.vertices[j + 1].y;
+            aresta.coords[0].x = poligono.vertices[j].x;
+            aresta.coords[0].y = poligono.vertices[j].y;
+            aresta.coords[1].x = poligono.vertices[j + 1].x;
+            aresta.coords[1].y = poligono.vertices[j + 1].y;
             acertos += checkLineClick(aresta, mouse_x, i, window_height, 0);
         }
     }

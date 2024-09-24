@@ -26,6 +26,8 @@ Linha currentLine;
 Poligono currentPolygon;
 
 Ponto *pontoSelecionado = NULL;
+Linha *linhaSelecionada = NULL;
+Poligono *poligonoSelecionado = NULL;
 
 int init(void){
     GLclampf Red = 1.0f, Green = 1.0f, Blue = 1.0f, Alpha = 0.0f;
@@ -76,8 +78,8 @@ void mouse(int button, int state, int x, int y){
             // printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
         }
         else if (current_state == DRAWING_LINE){
-            currentLine.coords[1][0] = x;
-            currentLine.coords[1][1] = window_height - y;
+            currentLine.coords[1].x = x;
+            currentLine.coords[1].y = window_height - y;
             Linha novaLinha = currentLine;
             if (lineList){
                 LineNode* temp = lineList;
@@ -100,8 +102,8 @@ void mouse(int button, int state, int x, int y){
             }
         }
         else if (current_state == LINHA){
-            currentLine.coords[0][0] = x;
-            currentLine.coords[0][1] = window_height - y;
+            currentLine.coords[0].x = x;
+            currentLine.coords[0].y = window_height - y;
             currentLine.color[0] = current_color[0];
             currentLine.color[1] = current_color[1];
             currentLine.color[2] = current_color[2];
@@ -118,6 +120,8 @@ void mouse(int button, int state, int x, int y){
                 while (temp) {
                     if (checkPointClick(temp->val, x, y, window_height, tolerancia)) {
                         pontoSelecionado = temp;
+                        linhaSelecionada = NULL;
+                        poligonoSelecionado = NULL;
                         break;
                     } else {
                         back = temp;
@@ -126,12 +130,29 @@ void mouse(int button, int state, int x, int y){
                     pontoSelecionado = NULL;
                 }
             }
+            if (lineList != NULL) {
+                LineNode* temp = lineList;
+                LineNode* back = NULL;
+
+                while (temp) {
+                    if (checkLineClick(temp->val, x, y, window_height, tolerancia)) {
+                        pontoSelecionado = NULL;
+                        linhaSelecionada = temp;
+                        poligonoSelecionado = NULL;
+                        break;
+
+                    } else {
+                        back = temp;
+                        temp = temp->next;
+                    }
+                }
+            }
         }
 
         if(current_state == PONTO){
             Ponto novoPonto;
-            novoPonto.x = x;
-            novoPonto.y = window_height - y;
+            novoPonto.vertice.x = x;
+            novoPonto.vertice.y = window_height - y;
             novoPonto.color[0] = current_color[0];
             novoPonto.color[1] = current_color[1];
             novoPonto.color[2] = current_color[2];
@@ -251,22 +272,60 @@ void teclado(unsigned char key, int x, int y){
     } else if (current_state == NONE && pontoSelecionado != NULL) {
         switch(key){
             case 97: // A
-                transladarPonto(-5, 0, pontoSelecionado);
+                transladar(-5, 0, &pontoSelecionado->vertice, 1);
                 break;
             case 100: // D
-                transladarPonto(5, 0, pontoSelecionado);
+                transladar(5, 0, &pontoSelecionado->vertice, 1);
                 break;
             case 119: // W
-                transladarPonto(0, 5, pontoSelecionado);
+                transladar(0, 5, &pontoSelecionado->vertice, 1);
                 break;
             case 115: // S
-                transladarPonto(0, -5, pontoSelecionado);
+                transladar(0, -5, &pontoSelecionado->vertice, 1);
                 break;
             case 44: // ,
-                rotacionarPonto(1, pontoSelecionado);
+                rotacionar(1, &pontoSelecionado->vertice, 1);
                 break;
             case 46: // .
-                rotacionarPonto(-1, pontoSelecionado);
+                rotacionar(-1, &pontoSelecionado->vertice, 1);
+                break;
+            default: break;
+        };
+    } else if (current_state == NONE && linhaSelecionada != NULL) {
+        Vertice centro;
+        getCentro(&linhaSelecionada->coords, 2, &centro);
+        switch(key){
+            case 97: // A
+                transladar(-5, 0, &linhaSelecionada->coords, 2);
+                break;
+            case 100: // D
+                transladar(5, 0, &linhaSelecionada->coords, 2);
+                break;
+            case 119: // W
+                transladar(0, 5, &linhaSelecionada->coords, 2);
+                break;
+            case 115: // S
+                transladar(0, -5, &linhaSelecionada->coords, 2);
+                break;
+            case 44: // ,
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                rotacionar(1, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 46: // .
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                rotacionar(-1, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 61: // = ou +
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                escalar(1.5, 1.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 45: // - ou _
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                escalar(0.5, 0.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
                 break;
             default: break;
         };
@@ -296,6 +355,10 @@ void display(void){
     PrintPolygons(polygonList, current_state, currentPolygon);
     printLines(current_state, currentLine, lineList,mouse_x, mouse_y, window_height);
     printPoints(pointList);
+
+    if(linhaSelecionada!= NULL) desenharSelecao(&linhaSelecionada->coords, 2);
+    else if(pontoSelecionado!= NULL) desenharSelecao(&pontoSelecionado->vertice, 1);
+
     drawInterface(window_height, interfaceButtons, 7, current_color);
     glFlush();
     glClearColor(1.0f,1.0f,1.0f,0.0f);
