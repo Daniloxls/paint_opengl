@@ -15,7 +15,7 @@ float proportion_y = 115.2f/576;
 int mouse_x = 0;
 int mouse_y = 0;
 int tolerancia = 10;
-Botao interfaceButtons[7];
+Botao interfaceButtons[9];
 GLclampf current_color[3] = {0.0, 0.0, 0.0};
 enum State current_state = NONE;
 
@@ -182,6 +182,7 @@ void mouse(int button, int state, int x, int y){
 
             while (temp) {
                 if (checkPointClick(temp->val, x, y, window_height, tolerancia)) {
+                    pontoSelecionado = NULL;
                     PointNode* nextNode = temp->next;
                     if (back == NULL) {
                         pointList = nextNode;
@@ -202,6 +203,7 @@ void mouse(int button, int state, int x, int y){
 
             while (temp) {
                 if (checkLineClick(temp->val, x, y, window_height, tolerancia)) {
+                    linhaSelecionada = NULL;
                     LineNode* nextNode = temp->next;
                     if (back == NULL) {
                         lineList = nextNode;
@@ -359,7 +361,7 @@ void display(void){
     if(linhaSelecionada!= NULL) desenharSelecao(&linhaSelecionada->coords, 2);
     else if(pontoSelecionado!= NULL) desenharSelecao(&pontoSelecionado->vertice, 1);
 
-    drawInterface(window_height, interfaceButtons, 7, current_color);
+    drawInterface(window_height, interfaceButtons, 9, current_color);
     glFlush();
     glClearColor(1.0f,1.0f,1.0f,0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -381,7 +383,9 @@ int main(int argc, char** argv) {
     interfaceButtons[SelectButton] = (Botao){.x = 50, .y = window_height - 50, .size = 30, .icon = SelectIcon};
     interfaceButtons[RotateButton] = (Botao){.x = 10, .y = window_height - 90, .size = 30, .icon = RotateIcon};
     interfaceButtons[ResizeButton] = (Botao){.x = 50, .y = window_height - 90, .size = 30, .icon = ReSizeIcon};
-    interfaceButtons[RGBSelector] = (Botao){.x = 10, .y = window_height - 140, .size = 70, .icon = 0};
+    interfaceButtons[ReflexButton] = (Botao){.x = 10, .y = window_height - 130, .size = 30, .icon = ReflectionIcon};
+    interfaceButtons[ShearButton] = (Botao){.x = 50, .y = window_height - 130, .size = 30, .icon = ShearIcon};
+    interfaceButtons[RGBSelector] = (Botao){.x = 10, .y = window_height - 170, .size = 70, .icon = 0};
 
     init();
     glutDisplayFunc(display);

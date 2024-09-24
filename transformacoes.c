@@ -14,7 +14,7 @@ void desenharSelecao(Vertice vertices[], int qtd_vertices) {
         if(vertices[i].y < p2.y) p2.y = vertices[i].y;
     }
 
-    glColor3f(0.5, 0.5, 0.5);
+    glColor3f(0.9, 0.9, 0.9);
     glBegin(GL_LINE_LOOP);
     glVertex2i(p1.x - 10, p1.y + 10);
     glVertex2i(p2.x + 10, p1.y + 10);

@@ -1,6 +1,35 @@
 #include "botao.h"
 #include <GL/glut.h>
 
+void drawShearIcon(int x1, int y1, int iconSize)
+{
+    glLineWidth(2.0);
+    glBegin(GL_LINE_LOOP);
+    glVertex2i(x1 + 5, y1);
+    glVertex2i(x1 + iconSize, y1);
+    glVertex2i(x1 + iconSize  - 5, y1 - iconSize);
+    glVertex2i(x1, y1 - iconSize);
+    glEnd();
+    glLineWidth(1.0);
+}
+
+void drawReflectionIcon(int x1, int y1, int iconSize)
+{
+    glLineWidth(3.0);
+    glBegin(GL_LINES);
+    glVertex2i(x1 + (iconSize/2), y1);
+    glVertex2i(x1 + (iconSize/2), y1 - iconSize);
+    glEnd();
+    glLineWidth(1.0);
+
+    glBegin(GL_LINE_LOOP);
+    glVertex2i(x1, y1 - 5);
+    glVertex2i(x1 + iconSize, y1 - 5);
+    glVertex2i(x1 + (iconSize/2), y1 - iconSize + 5);
+    glEnd();
+
+}
+
 void drawResizeIcon(int x1, int y1, int iconSize)
 {
     glLineWidth(3.0);
@@ -130,10 +159,16 @@ void drawButton(int x1, int y1, int buttonSize, int iconType)
     case 5:
         drawRotateicon(x1 + 5, y1 - 5, 20);
         break;
-
-    default:
+    case 6:
         drawResizeIcon(x1 + 5, y1 - 5, 20);
         break;
+    case 7:
+        drawReflectionIcon(x1 + 5, y1 - 5, 20);
+        break;
+    case 8:
+        drawShearIcon(x1 + 5, y1 - 5, 20);
+        break;
+    default: break;
     }
 }
 

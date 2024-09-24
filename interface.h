@@ -3,6 +3,8 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+void drawShearIcon(int, int, int);
+void drawReflectionIcon(int, int, int);
 void drawPolygonIcon(int, int, int);
 void drawSelectIcon(int, int, int);
 void drawRotateicon(int, int, int);
