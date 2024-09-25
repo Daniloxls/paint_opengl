@@ -23,8 +23,6 @@ PointNode* pointList;
 LineNode* lineList;
 enum State current_state = NONE;
 
-
-
 WindowBorder window_border;
 
 PolygonNode *polygonList = NULL; // lista de poligonos
@@ -285,7 +283,7 @@ void teclado(unsigned char key, int x, int y){
         AddPolygon(&polygonList, currentPolygon);
         Poligono p;
         currentPolygon = p;
-        current_state = NONE;
+        current_state = POLIGONO;
     }
     // operações do ponto
     else if (current_state == NONE && pontoSelecionado != NULL) {
@@ -311,6 +309,28 @@ void teclado(unsigned char key, int x, int y){
                 break;
             case 100: // D
                 rotacionar(-1, &pontoSelecionado->vertice, 1);
+                break;
+            default: break;
+        };
+    } else if (current_state == ESPELHAMENTO && pontoSelecionado != NULL) {
+        switch(key){
+            case 119: // W
+                reflexao_x(&pontoSelecionado->vertice, 1);
+                break;
+            case 115: // S
+                reflexao_x(&pontoSelecionado->vertice, 1);
+                break;
+            case 97: // A
+                reflexao_y(&pontoSelecionado->vertice, 1);
+                break;
+            case 100: // D
+                reflexao_y(&pontoSelecionado->vertice, 1);
+                break;
+            case 113: // Q
+                reflexao_xy(&pontoSelecionado->vertice, 1);
+                break;
+            case 101: // E
+                reflexao_xy(&pontoSelecionado->vertice, 1);
                 break;
             default: break;
         };
