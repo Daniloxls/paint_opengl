@@ -90,7 +90,7 @@ void mouse(int button, int state, int x, int y){
                 AddPolygon(&polygonList, currentPolygon);
                 Poligono p;
                 currentPolygon = p;
-                current_state = NONE;
+                current_state = POLIGONO;
             }
             else{
                 currentLine.coords[1].x = x + window_border.left;
