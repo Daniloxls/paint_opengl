@@ -6,6 +6,23 @@
 #include "poligono.h"
 #include "linha.h"
 #include "ponto.h"
+#include <GL/gl.h>   // OpenGL header
+#include <GL/glu.h>
+
+// Callback functions with the correct signature
+void CALLBACK tessBeginCallback(GLenum type) {
+    glBegin(type);
+}
+
+void CALLBACK tessVertexCallback(GLvoid *vertex) {
+    const GLdouble *pointer = (GLdouble *)vertex;
+    glVertex2dv(pointer);
+}
+
+void CALLBACK tessEndCallback() {
+    glEnd();
+}
+
 
 void AddPolygon(PolygonNode **lista, Poligono poligono) {
     PolygonNode *insertpolygon = (PolygonNode *) malloc(sizeof(PolygonNode));
@@ -27,28 +44,48 @@ void PrintPolygons(PolygonNode *p, enum State current_state, Poligono currentPol
 
     PolygonNode *temp = p;
     while (temp != NULL) {
-        if(temp == NULL) break;
         glColor3f(temp->poligono.color[0], temp->poligono.color[1], temp->poligono.color[2]);
-        glBegin(GL_POLYGON);
-        for (int i = 0; i < temp->poligono.qtd_Vertices; i++) {
-            // printf("[%d, %d]\n", temp->poligono.vertices[i].x, temp->poligono.vertices[i].y);
-            glVertex2i(temp->poligono.vertices[i].x, temp->poligono.vertices[i].y);
+
+        GLUtesselator *tess = gluNewTess();
+        gluTessCallback(tess, GLU_TESS_BEGIN, (void (CALLBACK *)())tessBeginCallback);
+        gluTessCallback(tess, GLU_TESS_VERTEX, (void (CALLBACK *)())tessVertexCallback);
+        gluTessCallback(tess, GLU_TESS_END, (void (CALLBACK *)())tessEndCallback);
+
+        gluTessBeginPolygon(tess, NULL);
+        gluTessBeginContour(tess);
+
+        Vertice* tempvertice = temp->poligono.vertices;
+        while(tempvertice != NULL){
+            GLdouble *vertex = (GLdouble *)malloc(3 * sizeof(GLdouble));
+            if (vertex == NULL) {
+                gluDeleteTess(tess);
+                return;
+            }
+            vertex[0] = tempvertice->x;
+            vertex[1] = tempvertice->y;
+            vertex[2] = 0;
+            gluTessVertex(tess, vertex, vertex);
+            tempvertice = tempvertice->next;
         }
-        glEnd();
+
+        gluTessEndContour(tess);
+        gluTessEndPolygon(tess);
+        gluDeleteTess(tess);
+
         temp = temp->next;
     }
 
     if(current_state == DRAWING_POLYGON) {
-        glLineWidth(5.0f);
         glColor3f(current_color[0], current_color[1], current_color[2]);
+        glLineWidth(5.0f);
         glBegin(GL_LINES);
-        glVertex2i(currentPolygon.vertices[0].x, currentPolygon.vertices[0].y);
-        for (int i = 1; i < currentPolygon.qtd_Vertices - 1; i++) {
-            glVertex2i(currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
-            glVertex2i(currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
+        glVertex2i(currentPolygon.vertices->x, currentPolygon.vertices->y);
+        Vertice* temp = currentPolygon.vertices->next;
+        while(temp){
+            glVertex2i(temp->x, temp->y);
+            glVertex2i(temp->x, temp->y);
+            temp = temp->next;
         }
-        glVertex2i(currentPolygon.vertices[currentPolygon.qtd_Vertices-1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices-1].y);
-        glVertex2i(currentPolygon.vertices[currentPolygon.qtd_Vertices-1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices-1].y);
         glVertex2i(mouse_x, mouse_y);
         glEnd();
         glLineWidth(1.0f);

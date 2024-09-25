@@ -19,6 +19,7 @@ int tolerancia = 10;
 Botao interfaceButtons[9];
 GLclampf current_color[3] = {0.0f, 0.0f, 0.0f};
 Linha currentLine;
+Ponto firstPoint;
 PointNode* pointList;
 LineNode* lineList;
 enum State current_state = NONE;
@@ -70,9 +71,12 @@ void mouse(int button, int state, int x, int y){
             }
         }
         else if (current_state == POLIGONO) {
-            Vertice v = {.x = x + window_border.left, .y = window_border.top - y};
-            Vertice *verticeslist = malloc(99 * sizeof(Vertice));
-            verticeslist[0] = v;
+            Vertice *verticeslist = (Vertice*)malloc(sizeof(Vertice));
+            firstPoint.vertice.x = x + window_border.left;
+            firstPoint.vertice.y = window_border.top - y;
+            verticeslist->x = x + window_border.left;
+            verticeslist->y = window_border.top - y;
+            verticeslist->next = NULL;
             Poligono p;
             p.qtd_Vertices = 1;
             p.vertices = verticeslist;
@@ -84,15 +88,34 @@ void mouse(int button, int state, int x, int y){
             // printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
         }
         else if (current_state == DRAWING_POLYGON) {
+            if(checkPointClick(firstPoint, x + window_border.left, y, window_border.top, 10)){
+                AddPolygon(&polygonList, currentPolygon);
+                Poligono p;
+                currentPolygon = p;
+                current_state = NONE;
+            }
+            else{
+                currentLine.coords[1].x = x + window_border.left;
+                currentLine.coords[1].y = window_border.top - y;
+                currentPolygon.qtd_Vertices += 1;
 
-            currentLine.coords[1].x = x + window_border.left;
-            currentLine.coords[1].y = window_border.top - y;
-            currentPolygon.qtd_Vertices += 1;
-            Vertice v = {.x = x + window_border.left , .y = window_border.top - y};
-            Vertice *newVerticeslist = malloc(currentPolygon.qtd_Vertices * sizeof(Vertice));
-            newVerticeslist = currentPolygon.vertices;
-            newVerticeslist[currentPolygon.qtd_Vertices - 1] = v;
-            currentPolygon.vertices = newVerticeslist;
+                Vertice *newVertice = (Vertice*)malloc(sizeof(Vertice));
+                newVertice->x = x + window_border.left;
+                newVertice->y = window_border.top - y;
+
+                Vertice* temp = currentPolygon.vertices;
+                Vertice* back = NULL;
+                while(temp){
+                    back = temp;
+                    temp = temp->next;
+                }
+                newVertice->next = NULL;
+                back->next = newVertice;
+
+            }
+
+
+
             // printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
         }
         else if (current_state == DRAWING_LINE){
