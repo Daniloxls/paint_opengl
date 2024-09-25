@@ -3,9 +3,10 @@
 
 #include <GL/glut.h>
 #include "state.h"
+#include "ponto.h"
 
 typedef struct linha{
-    int coords[2][2];
+    Vertice coords[2];
     GLclampf color[3];
 } Linha ;
 

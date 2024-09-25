@@ -4,6 +4,8 @@
 #define SelectIcon 4
 #define RotateIcon 5
 #define ReSizeIcon 6
+#define ReflectionIcon 7
+#define ShearIcon 8
 
 
 #ifndef BOTAO_H
@@ -23,6 +25,8 @@ enum BotaoID {
   SelectButton,
   RotateButton,
   ResizeButton,
+  ReflexButton,
+  ShearButton,
   RGBSelector,
 };
 

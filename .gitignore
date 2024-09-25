@@ -4,3 +4,9 @@
 # Ignorar todos os arquivos .exe em qualquer pasta
 *.exe
 *.sh
+
+# Ignorar o projeto do codeblocks
+*.cbp
+*.o
+*.depend
+*.layout

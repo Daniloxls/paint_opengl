@@ -6,6 +6,7 @@
 #include "linha.h"
 #include "ponto.h"
 #include "poligono.h"
+#include "transformacoes.h"
 
 float window_height = 576.0f;
 float window_width = 1024.0f;
@@ -14,7 +15,8 @@ float proportion_y = 115.2f/576;
 int mouse_x = 0;
 int mouse_y = 0;
 int tolerancia = 10;
-Botao interfaceButtons[7];
+
+Botao interfaceButtons[9];
 GLclampf current_color[3] = {0.0f, 0.0f, 0.0f};
 Linha currentLine;
 PointNode* pointList;
@@ -28,15 +30,14 @@ typedef struct {
     float bottom;
 }Screen;
 
-Screen screen_border;
-
-// COMEÇA AQUI AAAAAAAAAA
-
-
 
 PolygonNode *polygonList = NULL; // lista de poligonos
+Linha currentLine;
 Poligono currentPolygon;
 
+Ponto *pontoSelecionado = NULL;
+Linha *linhaSelecionada = NULL;
+Poligono *poligonoSelecionado = NULL;
 
 int init(void){
     screen_border.left = -window_width/2;
@@ -56,12 +57,16 @@ void mouse(int button, int state, int x, int y){
     if (state == GLUT_UP && button == GLUT_LEFT_BUTTON){
         if(x < 90 - ) {
             checkRGBSelector(x, window_height - y, interfaceButtons[RGBSelector], current_color);
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 9; i++) {
                 if (checkInterfaceClick(x, window_height - y, interfaceButtons[i])) {
                     switch (i) {
-                    case LineButton: current_state = LINHA; break;
-                    case PointButton: current_state = PONTO; break;
-                    case PolygonButton: current_state = POLIGONO; break;
+                    case LineButton: current_state = LINHA; pontoSelecionado = NULL; linhaSelecionada = NULL; poligonoSelecionado = NULL; break;
+                    case PointButton: current_state = PONTO; pontoSelecionado = NULL; linhaSelecionada = NULL; poligonoSelecionado = NULL; break;
+                    case PolygonButton: current_state = POLIGONO; pontoSelecionado = NULL; linhaSelecionada = NULL; poligonoSelecionado = NULL; break;
+                    case ResizeButton: current_state = ESCALA; break;
+                    case RotateButton: current_state = ROTACAO; break;
+                    case ReflexButton: current_state = ESPELHAMENTO; break;
+                    case ShearButton: current_state = CISALHAMENTO; break;
 
                     default: current_state = NONE; break;
                     }
@@ -92,8 +97,8 @@ void mouse(int button, int state, int x, int y){
             // printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
         }
         else if (current_state == DRAWING_LINE){
-            currentLine.coords[1][0] = x;
-            currentLine.coords[1][1] = window_height - y;
+            currentLine.coords[1].x = x;
+            currentLine.coords[1].y = window_height - y;
             Linha novaLinha = currentLine;
             if (lineList){
                 LineNode* temp = lineList;
@@ -116,8 +121,8 @@ void mouse(int button, int state, int x, int y){
             }
         }
         else if (current_state == LINHA){
-            currentLine.coords[0][0] = x;
-            currentLine.coords[0][1] = window_height - y;
+            currentLine.coords[0].x = x;
+            currentLine.coords[0].y = window_height - y;
             currentLine.color[0] = current_color[0];
             currentLine.color[1] = current_color[1];
             currentLine.color[2] = current_color[2];
@@ -126,9 +131,47 @@ void mouse(int button, int state, int x, int y){
 
     }
     if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON){
+        if(current_state == NONE) {
+            if (pointList != NULL) {
+                PointNode* temp = pointList;
+                PointNode* back = NULL;
+
+                while (temp) {
+                    if (checkPointClick(temp->val, x, y, window_height, tolerancia)) {
+                        pontoSelecionado = temp;
+                        linhaSelecionada = NULL;
+                        poligonoSelecionado = NULL;
+                        break;
+                    } else {
+                        back = temp;
+                        temp = temp->next;
+                    }
+                    if(x > 90) pontoSelecionado = NULL;
+                }
+            }
+            if (lineList != NULL) {
+                LineNode* temp = lineList;
+                LineNode* back = NULL;
+
+                while (temp) {
+                    if (checkLineClick(temp->val, x, y, window_height, tolerancia)) {
+                        pontoSelecionado = NULL;
+                        linhaSelecionada = temp;
+                        poligonoSelecionado = NULL;
+                        break;
+
+                    } else {
+                        back = temp;
+                        temp = temp->next;
+                    }
+                    if(x > 90) linhaSelecionada = NULL;
+                }
+            }
+        }
 
         if(current_state == PONTO){
             addPoint(x, y, window_height, current_color, &pointList);
+
         }
 
     }
@@ -139,6 +182,7 @@ void mouse(int button, int state, int x, int y){
 
             while (temp) {
                 if (checkPointClick(temp->val, x, y, window_height, tolerancia)) {
+                    pontoSelecionado = NULL;
                     PointNode* nextNode = temp->next;
                     if (back == NULL) {
                         pointList = nextNode;
@@ -159,6 +203,7 @@ void mouse(int button, int state, int x, int y){
 
             while (temp) {
                 if (checkLineClick(temp->val, x, y, window_height, tolerancia)) {
+                    linhaSelecionada = NULL;
                     LineNode* nextNode = temp->next;
                     if (back == NULL) {
                         lineList = nextNode;
@@ -205,8 +250,10 @@ void reshape(int newWidth, int newHeight){
     interfaceButtons[LineButton].y = window_height - 50;
     interfaceButtons[SelectButton].y = window_height - 50;
     interfaceButtons[RotateButton].y = window_height - 90;
-    interfaceButtons[RGBSelector].y = window_height - 140;
     interfaceButtons[ResizeButton].y = window_height - 90;
+    interfaceButtons[ReflexButton].y = window_height - 130;
+    interfaceButtons[ShearButton].y = window_height - 130;
+    interfaceButtons[RGBSelector].y = window_height - 170;
 
     glViewport( 0, 0, newWidth, newHeight );
     glMatrixMode( GL_PROJECTION );
@@ -221,15 +268,140 @@ void mouseMove(int x, int y){
 
 void teclado(unsigned char key, int x, int y){
     if(current_state == DRAWING_POLYGON && key == 13 && currentPolygon.qtd_Vertices > 2) {
-        // printf("\nFechando poligono\n");
-        // for (int i = 0; i < currentPolygon.qtd_Vertices; i++) {
-        //     printf("[%d, %d]\n", currentPolygon.vertices[i].x, currentPolygon.vertices[i].y);
-        // }
-
         AddPolygon(&polygonList, currentPolygon);
         Poligono p;
         currentPolygon = p;
         current_state = NONE;
+    }
+    // operações do ponto
+    else if (current_state == NONE && pontoSelecionado != NULL) {
+        switch(key){
+            case 97: // A
+                transladar(-5, 0, &pontoSelecionado->vertice, 1);
+                break;
+            case 100: // D
+                transladar(5, 0, &pontoSelecionado->vertice, 1);
+                break;
+            case 119: // W
+                transladar(0, 5, &pontoSelecionado->vertice, 1);
+                break;
+            case 115: // S
+                transladar(0, -5, &pontoSelecionado->vertice, 1);
+                break;
+            default: break;
+        };
+    } else if (current_state == ROTACAO && pontoSelecionado != NULL) {
+        switch(key){
+            case 97: // A
+                rotacionar(1, &pontoSelecionado->vertice, 1);
+                break;
+            case 100: // D
+                rotacionar(-1, &pontoSelecionado->vertice, 1);
+                break;
+            default: break;
+        };
+    }
+    // operações da linha
+    else if (current_state == NONE && linhaSelecionada != NULL) {
+        Vertice centro;
+        getCentro(&linhaSelecionada->coords, 2, &centro);
+        switch(key){
+            case 97: // A
+                transladar(-5, 0, &linhaSelecionada->coords, 2);
+                break;
+            case 100: // D
+                transladar(5, 0, &linhaSelecionada->coords, 2);
+                break;
+            case 119: // W
+                transladar(0, 5, &linhaSelecionada->coords, 2);
+                break;
+            case 115: // S
+                transladar(0, -5, &linhaSelecionada->coords, 2);
+                break;
+            default: break;
+        };
+    } else if (current_state == ROTACAO && linhaSelecionada != NULL) {
+        Vertice centro;
+        getCentro(&linhaSelecionada->coords, 2, &centro);
+        switch(key){
+            case 97: // A
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                rotacionar(1, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 100: // D
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                rotacionar(-1, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            default: break;
+        };
+    } else if (current_state == ESCALA && linhaSelecionada != NULL) {
+        Vertice centro;
+        getCentro(&linhaSelecionada->coords, 2, &centro);
+        switch(key){
+            case 119: // W
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                escalar(1.5, 1.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 115: // S
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                escalar(0.5, 0.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            default: break;
+        };
+    } else if (current_state == CISALHAMENTO && linhaSelecionada != NULL) {
+        Vertice centro;
+        getCentro(&linhaSelecionada->coords, 2, &centro);
+        switch(key){
+            case 119: // W
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                cisalhamento_y(0.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 115: // S
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                cisalhamento_y(-0.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 97: // A
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                cisalhamento_x(-0.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            case 100: // D
+                transladar(-centro.x, -centro.y, &linhaSelecionada->coords, 2);
+                cisalhamento_x(0.5, &linhaSelecionada->coords, 2);
+                transladar(centro.x, centro.y, &linhaSelecionada->coords, 2);
+                break;
+            default: break;
+        };
+    } else if (current_state == ESPELHAMENTO && linhaSelecionada != NULL) {
+        Vertice centro;
+        getCentro(&linhaSelecionada->coords, 2, &centro);
+        switch(key){
+            case 119: // W
+                reflexao_x(&linhaSelecionada->coords, 2);
+                break;
+            case 115: // S
+                reflexao_x(&linhaSelecionada->coords, 2);
+                break;
+            case 97: // A
+                reflexao_y(&linhaSelecionada->coords, 2);
+                break;
+            case 100: // D
+                reflexao_y(&linhaSelecionada->coords, 2);
+                break;
+            case 113: // Q
+                reflexao_xy(&linhaSelecionada->coords, 2);
+                break;
+            case 101: // E
+                reflexao_xy(&linhaSelecionada->coords, 2);
+                break;
+            default: break;
+        };
     } else {
         switch(key){
             //Quando apertar P entra no modo de desenho de pontos
@@ -247,7 +419,6 @@ void teclado(unsigned char key, int x, int y){
     }
 }
 
-
 void display(void){
     glutMouseFunc(mouse);
     glutReshapeFunc(reshape);
@@ -257,7 +428,11 @@ void display(void){
     PrintPolygons(polygonList, current_state, currentPolygon);
     printLines(current_state, currentLine, lineList,mouse_x, mouse_y, window_height);
     printPoints(pointList);
-    drawInterface(window_height, interfaceButtons, 7, current_color);
+
+    if(linhaSelecionada!= NULL) desenharSelecao(&linhaSelecionada->coords, 2);
+    else if(pontoSelecionado!= NULL) desenharSelecao(&pontoSelecionado->vertice, 1);
+
+    drawInterface(window_height, interfaceButtons, 9, current_color);
     glFlush();
     glClearColor(1.0f,1.0f,1.0f,0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -279,7 +454,9 @@ int main(int argc, char** argv) {
     interfaceButtons[SelectButton] = (Botao){.x = 50, .y = window_height - 50, .size = 30, .icon = SelectIcon};
     interfaceButtons[RotateButton] = (Botao){.x = 10, .y = window_height - 90, .size = 30, .icon = RotateIcon};
     interfaceButtons[ResizeButton] = (Botao){.x = 50, .y = window_height - 90, .size = 30, .icon = ReSizeIcon};
-    interfaceButtons[RGBSelector] = (Botao){.x = 10, .y = window_height - 140, .size = 70, .icon = 0};
+    interfaceButtons[ReflexButton] = (Botao){.x = 10, .y = window_height - 130, .size = 30, .icon = ReflectionIcon};
+    interfaceButtons[ShearButton] = (Botao){.x = 50, .y = window_height - 130, .size = 30, .icon = ShearIcon};
+    interfaceButtons[RGBSelector] = (Botao){.x = 10, .y = window_height - 170, .size = 70, .icon = 0};
 
     init();
     glutDisplayFunc(display);

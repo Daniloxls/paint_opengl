@@ -1,18 +1,17 @@
-//
-// Created by danil on 23/09/2024.
-//
 #include "state.h"
 
 #ifndef PONTO_H
 #define PONTO_H
 
+typedef struct {
+    GLfloat x;
+    GLfloat y;
+} Vertice;
+
 typedef struct ponto{
-    int x;
-    int y;
+    Vertice vertice;
     GLclampf color[3];
 } Ponto ;
-
-
 
 typedef struct points {
     struct ponto val;
@@ -24,3 +23,4 @@ void printSinglePoint(Ponto ponto);
 void printPoints(PointNode* pointList);
 void addPoint(int x, int y, int window_height, GLclampf *current_color, PointNode** pointList);
 #endif
+

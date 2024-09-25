@@ -1,6 +1,3 @@
-//
-// Created by danil on 23/09/2024.
-//
 #ifndef STATE_H
 #define STATE_H
 
@@ -10,8 +7,12 @@ enum State {
     POLIGONO,
     DRAWING_LINE,
     DRAWING_POLYGON,
+    ROTACAO,
+    ESCALA,
+    ESPELHAMENTO,
+    CISALHAMENTO,
     NONE
 };
 
-
 #endif
+

@@ -80,3 +80,4 @@ int checkPoligonoClick(Poligono poligono, int mouse_x, int mouse_y, int window_h
     //return acertos % 2;
     return 0;
 }
+
