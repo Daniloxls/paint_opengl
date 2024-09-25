@@ -112,7 +112,7 @@ void drawPointIcon(int x1, int y1)
     glBegin(GL_POINTS);
     glVertex2i(x1, y1);
     glEnd();
-    glPointSize(20.0f);
+    glPointSize(5.0f);
 }
 
 void drawLineIcon(int x1, int y1, int iconSize)

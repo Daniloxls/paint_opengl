@@ -46,7 +46,7 @@ int init(void){
     glMatrixMode(GL_PROJECTION);
     gluOrtho2D(window_border.left, window_border.right, window_border.bottom, window_border.top);
     glClear(GL_COLOR_BUFFER_BIT);
-    glPointSize(20.0f);
+    glPointSize(5.0f);
 }
 
 void mouse(int button, int state, int x, int y){
