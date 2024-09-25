@@ -3,9 +3,10 @@
 #ifndef PONTO_H
 #define PONTO_H
 
-typedef struct {
+typedef struct vertice{
     GLfloat x;
     GLfloat y;
+    struct vertice *next;
 } Vertice;
 
 typedef struct ponto{
