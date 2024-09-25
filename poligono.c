@@ -94,8 +94,34 @@ void PrintPolygons(PolygonNode *p, enum State current_state, Poligono currentPol
 
 }
 
-int checkPoligonoClick(Poligono poligono, int mouse_x, int mouse_y, int window_height, int tolerancia, PointNode** pointList){
+int checkPoligonoClick(Poligono poligono, int mouse_x, int mouse_y, int window_height, int tolerancia, PointNode** pointList) {
+    int acertos = 0;
+    int y = window_height - mouse_y;
+    Vertice* temp = poligono.vertices->next;
+    Vertice* back = poligono.vertices;
 
-    return 0;
+    while (temp != NULL) {
+        if ((temp->y > y) != (back->y > y)) { // Check if y is between temp->y and back->y
+            int intersect_x = back->x + (y - back->y) * (temp->x - back->x) / (temp->y - back->y);
+
+            if (mouse_x < intersect_x) {
+                acertos++;
+            }
+        }
+        back = temp;
+        temp = temp->next;
+    }
+
+    temp = poligono.vertices;
+    if ((temp->y > y) != (back->y > y)) {
+        int intersect_x = back->x + (y - back->y) * (temp->x - back->x) / (temp->y - back->y);
+
+        if (mouse_x < intersect_x) {
+            acertos++;
+        }
+    }
+
+    return acertos % 2;
 }
+
 
