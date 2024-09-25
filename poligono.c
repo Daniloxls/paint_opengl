@@ -2,8 +2,10 @@
 // Created by danil on 23/09/2024.
 //
 
+#include <stdio.h>
 #include "poligono.h"
 #include "linha.h"
+#include "ponto.h"
 
 void AddPolygon(PolygonNode **lista, Poligono poligono) {
     PolygonNode *novoPoligono = (PolygonNode *)malloc(sizeof(PolygonNode));
@@ -40,18 +42,42 @@ void PrintPolygons(PolygonNode *p, enum State current_state, Poligono currentPol
     }
 }
 
-int checkPoligonoClick(Poligono poligono, int mouse_x, int mouse_y, int window_height, int tolerancia){
+int checkPoligonoClick(Poligono poligono, int mouse_x, int mouse_y, int window_height, int tolerancia, PointNode** pointList){
+
     int acertos = 0;
-    int y = window_height - mouse_y;
-    for (int i = window_height - mouse_y; i <= window_height; i++ ){
-        for(int j = 0; j < poligono.qtd_Vertices - 1; j++){
-            Linha aresta;
-            aresta.coords[0].x = poligono.vertices[j].x;
-            aresta.coords[0].y = poligono.vertices[j].y;
-            aresta.coords[1].x = poligono.vertices[j + 1].x;
-            aresta.coords[1].y = poligono.vertices[j + 1].y;
-            acertos += checkLineClick(aresta, mouse_x, i, window_height, 0);
+    GLclampf point_color[3] = {1.0f, 0.0f, 0.0f};
+    printf("x: %d\n y: %d\n height:%d\n ", mouse_x, mouse_y, window_height);
+
+    for(int j = 0; j < poligono.qtd_Vertices - 1; j++){
+        Linha aresta;
+        aresta.coords[0][0] = poligono.vertices[j].x;
+        aresta.coords[0][1] = poligono.vertices[j].y;
+        aresta.coords[1][0] = poligono.vertices[j + 1].x;
+        aresta.coords[1][1] = poligono.vertices[j + 1].y;
+        int consty = (2*poligono.vertices[j].y) - window_height;
+        addPoint(poligono.vertices[j].x, consty, window_height, point_color, pointList);
+        for (int i = window_height - mouse_y; i <= window_height; i++ ){
+            if(checkLineClick(aresta, mouse_x, i, window_height, 10)){
+                acertos ++;
+                break;
+            }
         }
     }
-    return acertos % 2;
+    Linha aresta;
+    aresta.coords[0][0] = poligono.vertices[poligono.qtd_Vertices].x;
+    aresta.coords[0][1] = poligono.vertices[poligono.qtd_Vertices].y;
+    aresta.coords[1][0] = poligono.vertices[0].x;
+    aresta.coords[1][1] = poligono.vertices[0].y;
+    int consty = (2*poligono.vertices[poligono.qtd_Vertices].y) - window_height;
+    addPoint(poligono.vertices[poligono.qtd_Vertices].x, consty, window_height, point_color, pointList);
+    for (int i = window_height - mouse_y; i <= window_height; i++ ){
+        if(checkLineClick(aresta, mouse_x, i, window_height, 10)){
+            acertos ++;
+            break;
+        }
+    }
+    printf("%d\n", acertos);
+    //return acertos % 2;
+    return 0;
 }
+

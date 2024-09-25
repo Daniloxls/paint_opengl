@@ -8,19 +8,29 @@
 #include "poligono.h"
 #include "transformacoes.h"
 
-int window_height = 576;
-int window_width = 1024;
+float window_height = 576.0f;
+float window_width = 1024.0f;
 float proportion_x = 204.8f/1024;
 float proportion_y = 115.2f/576;
 int mouse_x = 0;
 int mouse_y = 0;
 int tolerancia = 10;
-Botao interfaceButtons[9];
-GLclampf current_color[3] = {0.0, 0.0, 0.0};
-enum State current_state = NONE;
 
+Botao interfaceButtons[9];
+GLclampf current_color[3] = {0.0f, 0.0f, 0.0f};
+Linha currentLine;
 PointNode* pointList;
 LineNode* lineList;
+enum State current_state = NONE;
+
+typedef struct {
+    float left;
+    float right;
+    float top;
+    float bottom;
+}Screen;
+
+
 PolygonNode *polygonList = NULL; // lista de poligonos
 Linha currentLine;
 Poligono currentPolygon;
@@ -30,17 +40,22 @@ Linha *linhaSelecionada = NULL;
 Poligono *poligonoSelecionado = NULL;
 
 int init(void){
+    screen_border.left = -window_width/2;
+    screen_border.right = window_width/2;
+    screen_border.top = window_height/2;
+    screen_border.bottom = -window_height/2;
+
     GLclampf Red = 1.0f, Green = 1.0f, Blue = 1.0f, Alpha = 0.0f;
     glClearColor(Red, Green, Blue, Alpha);
     glMatrixMode(GL_PROJECTION);
-    gluOrtho2D(0.0, window_width, 0.0, window_height);
+    gluOrtho2D(screen_border.left, screen_border.right, screen_border.bottom, screen_border.top);
     glClear(GL_COLOR_BUFFER_BIT);
     glPointSize(20.0f);
 }
 
 void mouse(int button, int state, int x, int y){
     if (state == GLUT_UP && button == GLUT_LEFT_BUTTON){
-        if(x < 90) {
+        if(x < 90 - ) {
             checkRGBSelector(x, window_height - y, interfaceButtons[RGBSelector], current_color);
             for (int i = 0; i < 9; i++) {
                 if (checkInterfaceClick(x, window_height - y, interfaceButtons[i])) {
@@ -155,28 +170,8 @@ void mouse(int button, int state, int x, int y){
         }
 
         if(current_state == PONTO){
-            Ponto novoPonto;
-            novoPonto.vertice.x = x;
-            novoPonto.vertice.y = window_height - y;
-            novoPonto.color[0] = current_color[0];
-            novoPonto.color[1] = current_color[1];
-            novoPonto.color[2] = current_color[2];
-            if (pointList) {
-                PointNode *temp = pointList;
-                PointNode *back = NULL;
-                while (temp) {
-                    back = temp;
-                    temp = temp->next;
-                }
-                PointNode *insertPoint = (PointNode *) malloc(sizeof(PointNode));
-                insertPoint->val = novoPonto;
-                insertPoint->next = NULL;
-                back->next = insertPoint;
-            } else {
-                pointList = (PointNode *) malloc(sizeof(PointNode));
-                pointList->val = novoPonto;
-                pointList->next = NULL;
-            }
+            addPoint(x, y, window_height, current_color, &pointList);
+
         }
 
     }
@@ -228,7 +223,7 @@ void mouse(int button, int state, int x, int y){
             PolygonNode* back = NULL;
 
             while (temp) {
-                if (checkPoligonoClick(temp->poligono, x, y, window_height, tolerancia)) {
+                if (checkPoligonoClick(temp->poligono, x, y, window_height, tolerancia, &pointList)) {
                     PolygonNode* nextNode = temp->next;
                     if (back == NULL) {
                         polygonList = nextNode;
@@ -260,7 +255,6 @@ void reshape(int newWidth, int newHeight){
     interfaceButtons[ShearButton].y = window_height - 130;
     interfaceButtons[RGBSelector].y = window_height - 170;
 
-
     glViewport( 0, 0, newWidth, newHeight );
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
@@ -279,7 +273,7 @@ void teclado(unsigned char key, int x, int y){
         currentPolygon = p;
         current_state = NONE;
     }
-    // operações do ponto
+    // operaÃ§Ãµes do ponto
     else if (current_state == NONE && pontoSelecionado != NULL) {
         switch(key){
             case 97: // A
@@ -307,7 +301,7 @@ void teclado(unsigned char key, int x, int y){
             default: break;
         };
     }
-    // operações da linha
+    // operaÃ§Ãµes da linha
     else if (current_state == NONE && linhaSelecionada != NULL) {
         Vertice centro;
         getCentro(&linhaSelecionada->coords, 2, &centro);
