@@ -4,12 +4,7 @@
 #include <GL/glut.h>
 #include "state.h"
 #include "ponto.h"
-
-typedef struct {
-    int x;
-    int y;
-} Vertice;
-
+#include "linha.h"
 typedef struct {
     int qtd_Vertices;
     Vertice *vertices;
@@ -24,7 +19,7 @@ struct polygonElement {
 typedef struct polygonElement PolygonNode;
 
 void AddPolygon(PolygonNode **lista, Poligono poligono);
-void PrintPolygons(PolygonNode *p, enum State current_state, Poligono currentPolygon);
+void PrintPolygons(PolygonNode *p, enum State current_state, Poligono currentPolygon, GLclampf *current_color, int mouse_x, int mouse_y) ;
 int checkPoligonoClick(Poligono poligono, int mouse_x, int mouse_y, int window_height, int tolerancia, PointNode** pointList);
 
 #endif //BANDEIRA_POLIGONO_H

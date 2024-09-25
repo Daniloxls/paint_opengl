@@ -23,13 +23,9 @@ PointNode* pointList;
 LineNode* lineList;
 enum State current_state = NONE;
 
-typedef struct {
-    float left;
-    float right;
-    float top;
-    float bottom;
-}Screen;
 
+
+WindowBorder window_border;
 
 PolygonNode *polygonList = NULL; // lista de poligonos
 Linha currentLine;
@@ -40,25 +36,25 @@ Linha *linhaSelecionada = NULL;
 Poligono *poligonoSelecionado = NULL;
 
 int init(void){
-    screen_border.left = -window_width/2;
-    screen_border.right = window_width/2;
-    screen_border.top = window_height/2;
-    screen_border.bottom = -window_height/2;
+    window_border.left = -window_width/2;
+    window_border.right = window_width/2;
+    window_border.top = window_height/2;
+    window_border.bottom = -window_height/2;
 
     GLclampf Red = 1.0f, Green = 1.0f, Blue = 1.0f, Alpha = 0.0f;
     glClearColor(Red, Green, Blue, Alpha);
     glMatrixMode(GL_PROJECTION);
-    gluOrtho2D(screen_border.left, screen_border.right, screen_border.bottom, screen_border.top);
+    gluOrtho2D(window_border.left, window_border.right, window_border.bottom, window_border.top);
     glClear(GL_COLOR_BUFFER_BIT);
     glPointSize(20.0f);
 }
 
 void mouse(int button, int state, int x, int y){
     if (state == GLUT_UP && button == GLUT_LEFT_BUTTON){
-        if(x < 90 - ) {
-            checkRGBSelector(x, window_height - y, interfaceButtons[RGBSelector], current_color);
+        if(x < 90) {
+            checkRGBSelector(x + window_border.left, window_border.top - y, interfaceButtons[RGBSelector], current_color);
             for (int i = 0; i < 9; i++) {
-                if (checkInterfaceClick(x, window_height - y, interfaceButtons[i])) {
+                if (checkInterfaceClick(x + window_border.left, window_border.top - y, interfaceButtons[i])) {
                     switch (i) {
                     case LineButton: current_state = LINHA; pontoSelecionado = NULL; linhaSelecionada = NULL; poligonoSelecionado = NULL; break;
                     case PointButton: current_state = PONTO; pontoSelecionado = NULL; linhaSelecionada = NULL; poligonoSelecionado = NULL; break;
@@ -74,7 +70,7 @@ void mouse(int button, int state, int x, int y){
             }
         }
         else if (current_state == POLIGONO) {
-            Vertice v = {.x = x, .y = window_height - y};
+            Vertice v = {.x = x + window_border.left, .y = window_border.top - y};
             Vertice *verticeslist = malloc(99 * sizeof(Vertice));
             verticeslist[0] = v;
             Poligono p;
@@ -88,8 +84,11 @@ void mouse(int button, int state, int x, int y){
             // printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
         }
         else if (current_state == DRAWING_POLYGON) {
+
+            currentLine.coords[1].x = x + window_border.left;
+            currentLine.coords[1].y = window_border.top - y;
             currentPolygon.qtd_Vertices += 1;
-            Vertice v = {.x = x, .y = window_height - y};
+            Vertice v = {.x = x + window_border.left , .y = window_border.top - y};
             Vertice *newVerticeslist = malloc(currentPolygon.qtd_Vertices * sizeof(Vertice));
             newVerticeslist = currentPolygon.vertices;
             newVerticeslist[currentPolygon.qtd_Vertices - 1] = v;
@@ -97,8 +96,8 @@ void mouse(int button, int state, int x, int y){
             // printf("[%d, %d]", currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].x, currentPolygon.vertices[currentPolygon.qtd_Vertices - 1].y);
         }
         else if (current_state == DRAWING_LINE){
-            currentLine.coords[1].x = x;
-            currentLine.coords[1].y = window_height - y;
+            currentLine.coords[1].x = x + window_border.left;
+            currentLine.coords[1].y = window_border.top - y;
             Linha novaLinha = currentLine;
             if (lineList){
                 LineNode* temp = lineList;
@@ -121,8 +120,8 @@ void mouse(int button, int state, int x, int y){
             }
         }
         else if (current_state == LINHA){
-            currentLine.coords[0].x = x;
-            currentLine.coords[0].y = window_height - y;
+            currentLine.coords[0].x = x + window_border.left;
+            currentLine.coords[0].y = window_border.top - y;
             currentLine.color[0] = current_color[0];
             currentLine.color[1] = current_color[1];
             currentLine.color[2] = current_color[2];
@@ -137,7 +136,7 @@ void mouse(int button, int state, int x, int y){
                 PointNode* back = NULL;
 
                 while (temp) {
-                    if (checkPointClick(temp->val, x, y, window_height, tolerancia)) {
+                    if (checkPointClick(temp->val, x + window_border.left, y, window_border.top, tolerancia)) {
                         pontoSelecionado = temp;
                         linhaSelecionada = NULL;
                         poligonoSelecionado = NULL;
@@ -154,7 +153,7 @@ void mouse(int button, int state, int x, int y){
                 LineNode* back = NULL;
 
                 while (temp) {
-                    if (checkLineClick(temp->val, x, y, window_height, tolerancia)) {
+                    if (checkLineClick(temp->val, x + window_border.left, y, window_border.top, tolerancia)) {
                         pontoSelecionado = NULL;
                         linhaSelecionada = temp;
                         poligonoSelecionado = NULL;
@@ -170,7 +169,7 @@ void mouse(int button, int state, int x, int y){
         }
 
         if(current_state == PONTO){
-            addPoint(x, y, window_height, current_color, &pointList);
+            addPoint(x + window_border.left, y, window_border.top, current_color, &pointList);
 
         }
 
@@ -181,7 +180,7 @@ void mouse(int button, int state, int x, int y){
             PointNode* back = NULL;
 
             while (temp) {
-                if (checkPointClick(temp->val, x, y, window_height, tolerancia)) {
+                if (checkPointClick(temp->val, x + window_border.left, y, window_border.top, tolerancia)) {
                     pontoSelecionado = NULL;
                     PointNode* nextNode = temp->next;
                     if (back == NULL) {
@@ -202,7 +201,7 @@ void mouse(int button, int state, int x, int y){
             LineNode* back = NULL;
 
             while (temp) {
-                if (checkLineClick(temp->val, x, y, window_height, tolerancia)) {
+                if (checkLineClick(temp->val, x + window_border.left, y, window_border.top, tolerancia)) {
                     linhaSelecionada = NULL;
                     LineNode* nextNode = temp->next;
                     if (back == NULL) {
@@ -223,7 +222,7 @@ void mouse(int button, int state, int x, int y){
             PolygonNode* back = NULL;
 
             while (temp) {
-                if (checkPoligonoClick(temp->poligono, x, y, window_height, tolerancia, &pointList)) {
+                if (checkPoligonoClick(temp->poligono, x + window_border.left, y, window_border.top, tolerancia, &pointList)) {
                     PolygonNode* nextNode = temp->next;
                     if (back == NULL) {
                         polygonList = nextNode;
@@ -245,20 +244,35 @@ void reshape(int newWidth, int newHeight){
     window_width = newWidth;
     window_height = newHeight;
 
-    interfaceButtons[PolygonButton].y = window_height - 10;
-    interfaceButtons[PointButton].y = window_height - 10;
-    interfaceButtons[LineButton].y = window_height - 50;
-    interfaceButtons[SelectButton].y = window_height - 50;
-    interfaceButtons[RotateButton].y = window_height - 90;
-    interfaceButtons[ResizeButton].y = window_height - 90;
-    interfaceButtons[ReflexButton].y = window_height - 130;
-    interfaceButtons[ShearButton].y = window_height - 130;
-    interfaceButtons[RGBSelector].y = window_height - 170;
+    window_border.left = -newWidth/2;
+    window_border.right = newWidth/2;
+    window_border.top = newHeight/2;
+    window_border.bottom = -newHeight/2;
+
+    interfaceButtons[PolygonButton].x = 10 + window_border.left;
+    interfaceButtons[PointButton].x = 50 + window_border.left;
+    interfaceButtons[LineButton].x = 10 + window_border.left;
+    interfaceButtons[SelectButton].x = 50 + window_border.left;
+    interfaceButtons[RotateButton].x = 10 + window_border.left;
+    interfaceButtons[ResizeButton].x = 50 + window_border.left;
+    interfaceButtons[ReflexButton].x = 10 + window_border.left;
+    interfaceButtons[ShearButton].x = 50 + window_border.left;
+    interfaceButtons[RGBSelector].x = 10 + window_border.left;
+
+    interfaceButtons[PolygonButton].y = window_border.top - 10;
+    interfaceButtons[PointButton].y = window_border.top - 10;
+    interfaceButtons[LineButton].y = window_border.top - 50;
+    interfaceButtons[SelectButton].y = window_border.top - 50;
+    interfaceButtons[RotateButton].y = window_border.top - 90;
+    interfaceButtons[ResizeButton].y = window_border.top - 90;
+    interfaceButtons[ReflexButton].y = window_border.top - 130;
+    interfaceButtons[ShearButton].y = window_border.top - 130;
+    interfaceButtons[RGBSelector].y = window_border.top - 170;
 
     glViewport( 0, 0, newWidth, newHeight );
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
-    gluOrtho2D( 0, newWidth, 0, newHeight);
+    gluOrtho2D( window_border.left,  window_border.right, window_border.bottom, window_border.top);
 }
 
 void mouseMove(int x, int y){
@@ -425,14 +439,14 @@ void display(void){
     glutMotionFunc(mouseMove);
     glutPassiveMotionFunc(mouseMove);
     glutKeyboardFunc(teclado);
-    PrintPolygons(polygonList, current_state, currentPolygon);
-    printLines(current_state, currentLine, lineList,mouse_x, mouse_y, window_height);
+    PrintPolygons(polygonList, current_state, currentPolygon, current_color, mouse_x + window_border.left, window_border.top - mouse_y);
+    printLines(current_state, currentLine, lineList,mouse_x + window_border.left, mouse_y, window_border.top);
     printPoints(pointList);
 
     if(linhaSelecionada!= NULL) desenharSelecao(&linhaSelecionada->coords, 2);
     else if(pontoSelecionado!= NULL) desenharSelecao(&pontoSelecionado->vertice, 1);
 
-    drawInterface(window_height, interfaceButtons, 9, current_color);
+    drawInterface(window_border, interfaceButtons, 9, current_color);
     glFlush();
     glClearColor(1.0f,1.0f,1.0f,0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -447,18 +461,18 @@ int main(int argc, char** argv) {
     int y = 100;
     glutInitWindowPosition(x,y);
     glutCreateWindow("Paint");
-
-    interfaceButtons[PolygonButton] = (Botao){.x = 10, .y = window_height - 10, .size = 30, .icon = PolygonIcon};
-    interfaceButtons[PointButton] = (Botao){.x = 50, .y = window_height - 10, .size = 30, .icon = PointIcon};
-    interfaceButtons[LineButton] = (Botao){.x = 10, .y = window_height - 50, .size = 30, .icon = LineIcon};
-    interfaceButtons[SelectButton] = (Botao){.x = 50, .y = window_height - 50, .size = 30, .icon = SelectIcon};
-    interfaceButtons[RotateButton] = (Botao){.x = 10, .y = window_height - 90, .size = 30, .icon = RotateIcon};
-    interfaceButtons[ResizeButton] = (Botao){.x = 50, .y = window_height - 90, .size = 30, .icon = ReSizeIcon};
-    interfaceButtons[ReflexButton] = (Botao){.x = 10, .y = window_height - 130, .size = 30, .icon = ReflectionIcon};
-    interfaceButtons[ShearButton] = (Botao){.x = 50, .y = window_height - 130, .size = 30, .icon = ShearIcon};
-    interfaceButtons[RGBSelector] = (Botao){.x = 10, .y = window_height - 170, .size = 70, .icon = 0};
-
     init();
+
+    interfaceButtons[PolygonButton] = (Botao){.x = 10 + window_border.left, .y = window_border.top - 10, .size = 30, .icon = PolygonIcon};
+    interfaceButtons[PointButton] = (Botao){.x = 50 + window_border.left, .y = window_border.top - 10, .size = 30, .icon = PointIcon};
+    interfaceButtons[LineButton] = (Botao){.x = 10 + window_border.left, .y = window_border.top - 50, .size = 30, .icon = LineIcon};
+    interfaceButtons[SelectButton] = (Botao){.x = 50 + window_border.left, .y = window_border.top - 50, .size = 30, .icon = SelectIcon};
+    interfaceButtons[RotateButton] = (Botao){.x = 10 + window_border.left, .y = window_border.top - 90, .size = 30, .icon = RotateIcon};
+    interfaceButtons[ResizeButton] = (Botao){.x = 50 + window_border.left, .y = window_border.top - 90, .size = 30, .icon = ReSizeIcon};
+    interfaceButtons[ReflexButton] = (Botao){.x = 10 + window_border.left, .y = window_border.top - 130, .size = 30, .icon = ReflectionIcon};
+    interfaceButtons[ShearButton] = (Botao){.x = 50 + window_border.left, .y = window_border.top - 130, .size = 30, .icon = ShearIcon};
+    interfaceButtons[RGBSelector] = (Botao){.x = 10 + window_border.left, .y = window_border.top - 170, .size = 70, .icon = 0};
+
     glutDisplayFunc(display);
     glutMainLoop();
     return 0;

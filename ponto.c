@@ -5,10 +5,10 @@
 #include <GL/glut.h>
 #include "ponto.h"
 
-void addPoint(int x, int y, int window_height, GLclampf *current_color, PointNode** pointList){
+void addPoint(float x, float y, float window_height, GLclampf *current_color, PointNode** pointList){
     Ponto novoPonto;
-    novoPonto.x = x;
-    novoPonto.y = window_height - y;
+    novoPonto.vertice.x = x;
+    novoPonto.vertice.y = window_height - y;
     novoPonto.color[0] = current_color[0];
     novoPonto.color[1] = current_color[1];
     novoPonto.color[2] = current_color[2];

@@ -79,6 +79,12 @@ build CMakeFiles/bandeira.dir/interface.c.obj: C_COMPILER__bandeira_Debug C$:/Us
   OBJECT_DIR = CMakeFiles\bandeira.dir
   OBJECT_FILE_DIR = CMakeFiles\bandeira.dir
 
+build CMakeFiles/bandeira.dir/transformacoes.c.obj: C_COMPILER__bandeira_Debug C$:/Users/danil/Desktop/Projetos/paint_opengl/transformacoes.c || cmake_object_order_depends_target_bandeira
+  DEP_FILE = CMakeFiles\bandeira.dir\transformacoes.c.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\bandeira.dir
+  OBJECT_FILE_DIR = CMakeFiles\bandeira.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target bandeira
@@ -87,7 +93,7 @@ build CMakeFiles/bandeira.dir/interface.c.obj: C_COMPILER__bandeira_Debug C$:/Us
 #############################################
 # Link the executable bandeira.exe
 
-build bandeira.exe: C_EXECUTABLE_LINKER__bandeira_Debug CMakeFiles/bandeira.dir/main.c.obj CMakeFiles/bandeira.dir/linha.c.obj CMakeFiles/bandeira.dir/ponto.c.obj CMakeFiles/bandeira.dir/poligono.c.obj CMakeFiles/bandeira.dir/interface.c.obj
+build bandeira.exe: C_EXECUTABLE_LINKER__bandeira_Debug CMakeFiles/bandeira.dir/main.c.obj CMakeFiles/bandeira.dir/linha.c.obj CMakeFiles/bandeira.dir/ponto.c.obj CMakeFiles/bandeira.dir/poligono.c.obj CMakeFiles/bandeira.dir/interface.c.obj CMakeFiles/bandeira.dir/transformacoes.c.obj
   FLAGS = -g
   LINK_LIBRARIES = -lopengl32  -lglu32  -lfreeglut  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\bandeira.dir

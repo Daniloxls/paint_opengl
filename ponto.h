@@ -21,6 +21,6 @@ typedef struct points {
 int checkPointClick(Ponto ponto, int mouse_x, int mouse_y, int window_height, int tolerancia);
 void printSinglePoint(Ponto ponto);
 void printPoints(PointNode* pointList);
-void addPoint(int x, int y, int window_height, GLclampf *current_color, PointNode** pointList);
+void addPoint(float x, float y, float window_height, GLclampf *current_color, PointNode** pointList);
 #endif
 

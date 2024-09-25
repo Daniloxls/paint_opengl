@@ -1,5 +1,7 @@
 #include "botao.h"
 #include <GL/glut.h>
+#include <stdio.h>
+#include "state.h"
 
 void drawShearIcon(int x1, int y1, int iconSize)
 {
@@ -266,14 +268,14 @@ void drawSelectorRGB(int x1, int y1, int buttonSize, GLclampf current_color[])
     glEnd();
 }
 
-void drawInterface(int window_height, Botao botoes[], int tam, GLclampf current_color[])
+void drawInterface(WindowBorder window_border, Botao botoes[], int tam, GLclampf current_color[])
 {
     glColor3f(0.85, 0.9, 0.95);
     glBegin(GL_POLYGON);
-    glVertex2i(0, 0);
-    glVertex2i(90, 0);
-    glVertex2i(90, window_height);
-    glVertex2i(0, window_height);
+    glVertex2i(window_border.left, window_border.bottom);
+    glVertex2i(90 + window_border.left, window_border.bottom);
+    glVertex2i(90 + window_border.left, window_border.top);
+    glVertex2i(window_border.left, window_border.top);
     glEnd();
 
     for (int i = 0; i < tam - 1; i++)
@@ -283,8 +285,8 @@ void drawInterface(int window_height, Botao botoes[], int tam, GLclampf current_
 
     glColor3f(0.80, 0.80, 0.80);
     glBegin(GL_LINES);
-    glVertex2i(90, window_height);
-    glVertex2i(90, 0);
+    glVertex2i(90 + window_border.left, window_border.top);
+    glVertex2i(90 + window_border.left, window_border.bottom);
     glEnd();
 }
 

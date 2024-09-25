@@ -14,5 +14,13 @@ enum State {
     NONE
 };
 
+typedef struct {
+    float left;
+    float right;
+    float top;
+    float bottom;
+
+}WindowBorder;
+
 #endif
 
