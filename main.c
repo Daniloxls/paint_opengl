@@ -29,7 +29,7 @@ WindowBorder window_border;
 PolygonNode *polygonList = NULL; // lista de poligonos
 Linha currentLine;
 Poligono currentPolygon;
-
+int deleted = 0;
 Ponto *pontoSelecionado = NULL;
 Linha *linhaSelecionada = NULL;
 Poligono *poligonoSelecionado = NULL;
@@ -186,8 +186,8 @@ void mouse(int button, int state, int x, int y){
                     }
                     if(x > 90) linhaSelecionada = NULL;
                 }
-            } 
-            if (polygonList != NULL) {
+            }
+            if ((polygonList != NULL)) {
                 PolygonNode* temp = polygonList;
                 PolygonNode* back = NULL;
 
@@ -205,12 +205,16 @@ void mouse(int button, int state, int x, int y){
                 }
             }
         }
-
         if(current_state == PONTO){
             addPoint(x + window_border.left, y, window_border.top, current_color, &pointList);
 
         }
 
+    }
+    if (state == GLUT_DOWN && button == GLUT_MIDDLE_BUTTON){
+        if(poligonoSelecionado != NULL){
+            fechoConvexo(&polygonList, poligonoSelecionado);
+        }
     }
     if (state == GLUT_DOWN && button == GLUT_RIGHT_BUTTON){
         if (pointList != NULL) {
@@ -228,6 +232,7 @@ void mouse(int button, int state, int x, int y){
                     }
                     free(temp);
                     temp = nextNode;
+                    deleted = 1;
                     break;
                 } else {
                     back = temp;
@@ -235,7 +240,7 @@ void mouse(int button, int state, int x, int y){
                 }
             }
         }
-        if (lineList != NULL) {
+        if (lineList != NULL && !(deleted)) {
             LineNode* temp = lineList;
             LineNode* back = NULL;
 
@@ -250,6 +255,7 @@ void mouse(int button, int state, int x, int y){
                     }
                     free(temp);
                     temp = nextNode;
+                    deleted = 1;
                     break;
                 } else {
                     back = temp;
@@ -257,7 +263,7 @@ void mouse(int button, int state, int x, int y){
                 }
             }
         }
-        if (polygonList != NULL) {
+        if (polygonList != NULL && !(deleted)) {
             PolygonNode* temp = polygonList;
             PolygonNode* back = NULL;
 
@@ -278,6 +284,7 @@ void mouse(int button, int state, int x, int y){
                 }
             }
         }
+        deleted = 0;
     }
 }
 
