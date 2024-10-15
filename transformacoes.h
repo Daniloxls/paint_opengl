@@ -1,5 +1,3 @@
-
-
 #include <GL/glut.h>
 #include "poligono.h"
 #include "ponto.h"

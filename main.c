@@ -151,6 +151,7 @@ void mouse(int button, int state, int x, int y){
 
     }
     if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON){
+        printf("Mausi: (%4.f, %.4f)\n", (float) x + window_border.left, (float) window_border.top - y);
         if(current_state == NONE) {
             if (pointList != NULL) {
                 PointNode* temp = pointList;
